@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 ASTEPS - Astronomical Equatorial Positioning System
 
@@ -8,7 +9,6 @@ This will be a designed as a personal astrophotography and observation tool for 
 """
 
 """Imports"""
-from __future__ import annotations
 import json # Data parsing for API.
 import requests # API module.
 import os
