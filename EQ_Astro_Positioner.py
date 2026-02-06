@@ -97,6 +97,8 @@ def get_valid_float(prompt, min_value: float = None,
 
         return float_value
     
+
+#Get telescope location
 def get_location_info() -> EarthLocation:
         """
         Function to get user location 
