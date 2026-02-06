@@ -97,7 +97,7 @@ def get_valid_float(prompt, min_value: float = None,
 
         return float_value
     
-def get_location_info() -> list[dict]:
+def get_location_info() -> EarthLocation:
         """
         Function to get user location 
         """
@@ -132,13 +132,14 @@ def get_location_info() -> list[dict]:
                     continue
             if confirm == "y":
                 break
-        return {
-            "latitude": u_lat, "longitude": u_lon, "sea_level": u_height
-        }
+        return EarthLocation(lat=u_lat, lon=u_lon, height=u_height)
 
 #=====================================================================#
 """Main code"""
 if __name__ == "__main__":
     print("Starting Program")
-    observer_location: dict = (get_location_info()) #Get location info
-    t : str = Time.now() #Get current time
+    observer_location: EarthLocation = (get_location_info()) #Get location info
+    print(observer_location)
+
+    current_time = Time.now() #Get current time
+    julian_date: float = current_time.jd #Julian data
