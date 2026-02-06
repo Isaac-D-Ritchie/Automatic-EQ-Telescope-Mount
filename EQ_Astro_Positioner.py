@@ -96,12 +96,49 @@ def get_valid_float(prompt, min_value: float = None,
             continue
 
         return float_value
+    
+def get_location_info() -> list[dict]:
+        """
+        Function to get user location 
+        """
+        while True:
+            latitude: float = get_valid_float( #Get latitude
+                "Enter telescope latitude: ", -90, 90)
+
+            longitude: float = get_valid_float( #Get longitude
+                "Enter telescope longitude: ", -180, 180)
+
+            sea_level: float = get_valid_float( #Gets sea level
+                "Enter telescope sea level(m): ", -500, 8000)
+            
+            #convert to astropy units
+            u_lat: float = (latitude * u.deg)
+            u_lon: float = (longitude * u.deg)
+            u_height: float = (sea_level * u.m)
+
+            print(f"\nCurrent Information\n"
+                  f"Latitude: {latitude}°\n"
+                  f"Longitude: {longitude}°\n"
+                  f"Sea level: {sea_level}m\n"
+                )
+            while True: #Input confirmation
+                confirm = safe_input("Is this correct? (Y/N)").lower()
+                if confirm == "y":
+                    break
+                elif confirm == "n":
+                    break
+                else:
+                    print("Enter (Y/N)")
+                    continue
+            if confirm == "y":
+                break
+        return {
+            "latitude": u_lat, "longitude": u_lon, "sea_level": u_height
+        }
 
 #=====================================================================#
 """Main code"""
 if __name__ == "__main__":
-    print("Start Program")
-    t = Time.now()
-    print(t)
-    print(t.jd)
-    print(50 * u.deg)
+    print("Starting Program")
+    observer_location: dict = (get_location_info()) #Get location info
+    t : str = Time.now() #Get current time
