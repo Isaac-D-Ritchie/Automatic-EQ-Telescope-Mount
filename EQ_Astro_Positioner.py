@@ -119,9 +119,9 @@ def get_location_info() -> EarthLocation:
                 "Enter telescope sea level(m): ", -500, 8000)
             
             #convert to astropy units
-            u_lat: float = (latitude * u.deg)
-            u_lon: float = (longitude * u.deg)
-            u_height: float = (sea_level * u.m)
+            u_lat = (latitude * u.deg)
+            u_lon = (longitude * u.deg)
+            u_height = (sea_level * u.m)
 
             print(f"\nCurrent Information\n"
                   f"Latitude: {latitude}°\n"
