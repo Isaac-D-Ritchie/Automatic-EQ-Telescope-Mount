@@ -13,6 +13,7 @@ from astropy.coordinates import EarthLocation #For location
 from astropy.coordinates import SkyCoord #For sky object coordinates
     #u.ra - Right ascension
     #u.dec - Declination
+    #u.from_name - Gets coords from object name
 from astropy.coordinates.name_resolve import NameResolveError
 from astropy.coordinates import AltAz #For checking horizon location
     #u.alt - gets altitude
