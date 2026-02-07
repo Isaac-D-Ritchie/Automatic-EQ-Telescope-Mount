@@ -8,10 +8,15 @@ This will be a designed as a personal astrophotography and observation tool for 
 """
 #=====================================================================#
 """Imports & Modules"""
-from astropy.time import Time #For getting time
+from astropy.time import Time #For getting local time
 from astropy.coordinates import EarthLocation #For location
 from astropy.coordinates import SkyCoord #For sky object coordinates
+    #u.ra - Right ascension
+    #u.dec - Declination
+from astropy.coordinates.name_resolve import NameResolveError
 from astropy.coordinates import AltAz #For checking horizon location
+    #u.alt - gets altitude
+    #u.az - gets azimuth
 import astropy.units as u #Astropy units:
     #u.deg = degrees  
     #u.rad = radians
@@ -136,12 +141,68 @@ def get_location_info() -> EarthLocation:
                 break
         return EarthLocation(lat=u_lat, lon=u_lon, height=u_height)
 
+
+#Get telescope target location (except solar system objects)
+def get_target_location(t_location: EarthLocation,
+                        l_time: Time) -> SkyCoord:
+    """
+    Function that finds the coordinate of the object in relation 
+    to the user location, except solar system objects where a 
+    different function is called
+    Arguments:
+        t_location - The user / telescope location
+        l_time - The users local time
+    Returns:
+        Location in a SkyCoord value
+    """
+    while True:
+        try:
+            local_objects_check = [
+            "sun","mercury", "venus", "earth-moon-barycenter", "earth", "moon",
+            "mars", "jupiter", "saturn","uranus", "neptune", "pluto"]
+
+            object_name = get_non_empty_string("Enter target name: ")
+
+            if object_name.lower() in local_objects_check:
+                print("Local object identified")
+                return get_planet_location()
+
+            target_ra_dec = SkyCoord.from_name(object_name)
+            observer_frame = AltAz(obstime=l_time, location=t_location)
+            target_location: SkyCoord = target_ra_dec.transform_to(observer_frame)
+            return target_location
+        
+        except NameResolveError:
+            print(f"\nError: {object_name} Not fount")
+            continue
+
+
+#Get planet location
+def get_planet_location():
+    local_objects = [
+        "sun","mercury", "venus", "earth-moon-barycenter", "earth",
+        "moon", "mars", "jupiter", "saturn","uranus", "neptune", "pluto"]
+    #To be developed
+    return
+
+#=====================================================================#
+"""Testing variables"""
+#Test location (Southport UK)
+test_lat = 53.6311
+test_lon = -2.9925
+test_height = 6
+test_location = EarthLocation(lat=(test_lat * u.deg),
+        lon=(test_lon * u.deg),height=(test_height * u.m))
+
+#testing calls
+# current_time = Time.now() #Get current time
+# target_location = get_target_location(test_location, current_time)
+
 #=====================================================================#
 """Main code"""
 if __name__ == "__main__":
     print("Starting Program")
-    observer_location: EarthLocation = (get_location_info()) #Get location info
-    print(observer_location)
-
     current_time = Time.now() #Get current time
-    julian_date: float = current_time.jd #Julian data
+    observer_location: EarthLocation = (get_location_info()) #Get location info
+    target_location = get_target_location(observer_location, current_time)
+    print(f"target: {target_location}\n location: {observer_location}")
