@@ -207,7 +207,7 @@ def get_mount_angles(icrs_data: SkyCoord, location, local_time) -> tuple[float, 
         A tuple of the hour angle and declination
     """
     local_sidereal_time = local_time.sidereal_time("apparent",longitude=location.lon)
-    hour_angle = (local_sidereal_time - icrs_data.ra).wrap_at(360 * u.deg)
+    hour_angle = (local_sidereal_time - icrs_data.ra).wrap_at(180 * u.deg)
     hour_angle_deg = hour_angle.to(u.deg).value
     dec_deg = icrs_data.dec.deg
     return hour_angle_deg, dec_deg
@@ -229,9 +229,10 @@ if __name__ == "__main__":
 
     current_time = Time.now() #Get current time
     observer_location: EarthLocation = (get_location_info()) #Get location info
-    target_location: SkyCoord = get_target_location(observer_location, current_time)
-    icrs_value_target = target_location.transform_to("icrs") #Gets RA and DEC angles
-    mount_angles: tuple[float,float] = get_mount_angles(icrs_value_target, observer_location, current_time)
+    while True:
+        target_location: SkyCoord = get_target_location(observer_location, current_time)
+        icrs_value_target = target_location.transform_to("icrs") #Gets RA and DEC angles
+        mount_angles: tuple[float,float] = get_mount_angles(icrs_value_target, observer_location, current_time)
 
-    print(f"Hour angle = {mount_angles[0]}")
-    print(f"Declination = {mount_angles[1]}")
+        print(f"Hour angle = {mount_angles[0]}")
+        print(f"Declination = {mount_angles[1]}")
