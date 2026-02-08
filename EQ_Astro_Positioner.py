@@ -149,8 +149,8 @@ def get_target_location(t_location: EarthLocation,
                         l_time: Time) -> SkyCoord:
     """
     Function that finds the coordinate of the object in relation 
-    to the user location, except solar system objects where a 
-    different function is called
+    to the user location, using get_body for local objects (planets)
+    and from_name for non-local objects (stars).
     Arguments:
         t_location - The user / telescope location
         l_time - The users local time
