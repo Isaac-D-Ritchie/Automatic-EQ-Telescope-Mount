@@ -8,13 +8,14 @@ This will be a designed as a personal astrophotography and observation tool for 
 """
 #=====================================================================#
 """Imports & Modules"""
-from astropy.time import Time #For getting local time
-from astropy.coordinates import EarthLocation #For location
-from astropy.coordinates import SkyCoord #For sky object coordinates
+from astropy.time import Time #For getting observers local time
+from astropy.coordinates import EarthLocation #For observer location
+from astropy.coordinates import SkyCoord #For target coordinates
     #u.ra - Right ascension
     #u.dec - Declination
     #u.from_name - Gets coords from object name
 from astropy.coordinates import get_body #For solar system objects
+    #u.get_body("object") 
 from astropy.coordinates.name_resolve import NameResolveError
 from astropy.coordinates import AltAz #For checking horizon location
     #u.alt - gets altitude
