@@ -170,11 +170,21 @@ def get_target_location(t_location: EarthLocation,
                 print("Local object identified")
                 target_ra_dec = get_body(object_name, l_time)
                 target_location: SkyCoord = target_ra_dec.transform_to(observer_frame)
+
+                if target_location.alt < 0 * u.deg: #Checks if above horizon
+                    print("Object below horizon, try again")
+                    continue
+
                 return target_location
 
             print("Deep sky object identified")
             target_ra_dec = SkyCoord.from_name(object_name.lower())
             target_location: SkyCoord = target_ra_dec.transform_to(observer_frame)
+
+            if target_location.alt < 0 * u.deg: #Checks if above horizon
+                print("Object below horizon, try again")
+                continue
+
             return target_location
         
         except NameResolveError:
@@ -200,5 +210,6 @@ if __name__ == "__main__":
     print("Starting Program")
     current_time = Time.now() #Get current time
     observer_location: EarthLocation = (get_location_info()) #Get location info
-    target_location = get_target_location(observer_location, current_time)
-    print(f"target: {target_location}\n location: {observer_location}")
+    target_location: SkyCoord = get_target_location(observer_location, current_time)
+    icrs_value_target = target_location.transform_to("icrs") #Gets RA and DEC angles
+    
