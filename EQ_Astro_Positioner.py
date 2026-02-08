@@ -193,7 +193,7 @@ def get_target_location(t_location: EarthLocation,
 
 
 #Get mount angles in HA and DEC
-def get_mount_angles(icrs_data: SkyCoord, location, local_time) -> tuple[float, float]:
+def get_mount_angles(icrs_data: SkyCoord, location, local_time) -> tuple[float, float, float]:
     """
     Function takes all the gathered user data and calculates the equatorial
     angles for the mount. 
@@ -207,10 +207,14 @@ def get_mount_angles(icrs_data: SkyCoord, location, local_time) -> tuple[float, 
         A tuple of the hour angle and declination
     """
     local_sidereal_time = local_time.sidereal_time("apparent",longitude=location.lon)
+
+    dec_deg = icrs_data.dec.deg #For initail positioning
+    ra_deg = icrs_value_target.ra.deg
+
     hour_angle = (local_sidereal_time - icrs_data.ra).wrap_at(180 * u.deg)
-    hour_angle_deg = hour_angle.to(u.deg).value
-    dec_deg = icrs_data.dec.deg
-    return hour_angle_deg, dec_deg
+    hour_angle_deg = hour_angle.to(u.deg).value #For tracking
+
+    return hour_angle_deg, dec_deg, ra_deg
     
     
 #=====================================================================#
@@ -236,4 +240,5 @@ if __name__ == "__main__":
 
         print(f"Hour angle = {mount_angles[0]:.2f}")
         print(f"Declination = {mount_angles[1]:.2f}")
+        print(f"Right Ascension = {mount_angles[2]:.2f}")
         print(f"Altitude = {target_location.alt:.2f}")
