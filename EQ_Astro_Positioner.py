@@ -177,9 +177,9 @@ def get_target_location(t_location: EarthLocation,
 
                 return target_location
 
-            print("Deep sky object identified")
             target_ra_dec = SkyCoord.from_name(object_name.lower())
             target_location: SkyCoord = target_ra_dec.transform_to(observer_frame)
+            print("Deep sky object identified")
 
             if target_location.alt < 0 * u.deg: #Checks if above horizon
                 print("Object below horizon, try again")
@@ -191,6 +191,26 @@ def get_target_location(t_location: EarthLocation,
             print(f"\nError: {object_name} Not fount")
             continue
 
+def get_mount_angles(icrs_data: SkyCoord, location, local_time) -> tuple[float, float]:
+    """
+    Function takes all the gathered user data and calculates the equatorial
+    angles for the mount. 
+    The hour angle = LST - RA
+    Arguments:
+        icrs_data - International Celestial Reference System
+                    The target sky coordinates
+        location - the observers location
+        local_time - the observers local time
+    Returns:
+        A tuple of the hour angle and declination
+    """
+    local_sidereal_time = local_time.sidereal_time("apparent",longitude=location.lon)
+    hour_angle = (local_sidereal_time - icrs_data.ra).wrap_at(360 * u.deg)
+    hour_angle_deg = hour_angle.to(u.deg).value
+    dec_deg = icrs_data.dec.deg
+    return hour_angle_deg, dec_deg
+    
+    
 #=====================================================================#
 """Testing variables"""
 #Test location (Southport UK)
@@ -200,16 +220,16 @@ test_height = 6
 test_location = EarthLocation(lat=(test_lat * u.deg),
         lon=(test_lon * u.deg),height=(test_height * u.m))
 
-#testing calls
-# current_time = Time.now() #Get current time
-# target_location = get_target_location(test_location, current_time)
-
 #=====================================================================#
 """Main code"""
 if __name__ == "__main__":
     print("Starting Program")
+
     current_time = Time.now() #Get current time
     observer_location: EarthLocation = (get_location_info()) #Get location info
     target_location: SkyCoord = get_target_location(observer_location, current_time)
     icrs_value_target = target_location.transform_to("icrs") #Gets RA and DEC angles
-    
+    mount_angles: tuple[float,float] = get_mount_angles(icrs_value_target, observer_location, current_time)
+
+    print(f"Hour angle = {mount_angles[0]}")
+    print(f"Declination = {mount_angles[1]}")
