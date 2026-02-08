@@ -228,10 +228,10 @@ if __name__ == "__main__":
         icrs_value_target = target_location.transform_to("icrs") #Gets RA and DEC angles
         mount_angles: tuple[float,float] = get_mount_angles(icrs_value_target, observer_location, current_time)
 
-        print(f"Hour angle = {mount_angles[0]:.2f}")
-        print(f"Declination = {mount_angles[1]:.2f}")
-        print(f"Right Ascension = {mount_angles[2]:.2f}")
-        print(f"Altitude = {target_location.alt:.2f}")
+        print(f"Hour angle = {mount_angles[0]:.2f}\n"
+              f"Declination = {mount_angles[1]:.2f}\n"
+              f"Right Ascension = {mount_angles[2]:.2f}\n"
+              f"Altitude = {target_location.alt.deg:.2f}\n")
 
 """Testing variables"""
 #Test location (Southport UK)
