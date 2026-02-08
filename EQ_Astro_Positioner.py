@@ -231,6 +231,7 @@ def get_target_location(t_location: EarthLocation,
         
         except NameResolveError:
             print(f"\nError: {object_name} Not fount")
+            logging.error("Object not found")
             continue
 
 
