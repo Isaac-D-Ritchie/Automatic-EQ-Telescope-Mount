@@ -215,16 +215,6 @@ def get_mount_angles(icrs_data: SkyCoord, location, local_time) -> tuple[float, 
     hour_angle_deg = hour_angle.to(u.deg).value #For tracking
 
     return hour_angle_deg, dec_deg, ra_deg
-    
-    
-#=====================================================================#
-"""Testing variables"""
-#Test location (Southport UK)
-test_lat = 53.6311
-test_lon = -2.9925
-test_height = 6
-test_location = EarthLocation(lat=(test_lat * u.deg),
-        lon=(test_lon * u.deg),height=(test_height * u.m))
 
 #=====================================================================#
 """Main code"""
@@ -242,3 +232,11 @@ if __name__ == "__main__":
         print(f"Declination = {mount_angles[1]:.2f}")
         print(f"Right Ascension = {mount_angles[2]:.2f}")
         print(f"Altitude = {target_location.alt:.2f}")
+
+"""Testing variables"""
+#Test location (Southport UK)
+test_lat = 53.6311
+test_lon = -2.9925
+test_height = 6
+test_location = EarthLocation(lat=(test_lat * u.deg),
+        lon=(test_lon * u.deg),height=(test_height * u.m))
