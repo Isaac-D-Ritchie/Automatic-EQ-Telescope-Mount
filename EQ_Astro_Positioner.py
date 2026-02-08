@@ -36,13 +36,13 @@ import logging
 
 """Config"""
 
-    enable_logging = True #Logging toggle, true = logging on
+enable_logging = True #Logging toggle, true = logging on
 
-    if enable_logging:
-        logging.basicConfig( #Logging congig
-                filename="asteps.log", level= logging.DEBUG,
-                format= "%(asctime)s - %(levelname)s - %(message)s",
-                datefmt= "%Y-%m-%d %H:%M:%S", filemode= "a")
+if enable_logging:
+    logging.basicConfig( #Logging configs
+            filename="asteps.log", level= logging.DEBUG,
+            format= "%(asctime)s - %(levelname)s - %(message)s",
+            datefmt= "%Y-%m-%d %H:%M:%S", filemode= "a")
 
 #=====================================================================#
 """Functions"""
@@ -82,6 +82,7 @@ def get_non_empty_string(prompt: str) -> str:
 
         if sanitized_input == "":
             print("\nError: Input cannot be empty")
+            logging.error("Empty Input")
             continue
         else:
             return sanitized_input
@@ -108,12 +109,14 @@ def get_valid_float(prompt, min_value: float = None,
 
         if not sanitized_input:
             print("\nError: Input cannot be empty")
+            logging.error("Empty Input")
             continue
 
         try:
             float_value = float(raw_input)
         except ValueError:
             print("\nError: Invalid float value")
+            logging.error("Invalid float input")
             continue
 
         if min_value is not None and float_value < min_value:
@@ -148,6 +151,7 @@ def get_location_info() -> EarthLocation:
             u_lon = (longitude * u.deg)
             u_height = (sea_level * u.m)
 
+            logging.info("Location data parsed from user")
             print(f"\nCurrent Information\n"
                   f"Latitude: {latitude}°\n"
                   f"Longitude: {longitude}°\n"
@@ -158,13 +162,18 @@ def get_location_info() -> EarthLocation:
                 if confirm == "y":
                     break
                 elif confirm == "n":
+                    logging.info("Location voided by user")
                     break
                 else:
-                    print("Enter (Y/N)")
                     continue
+
             if confirm == "y":
+                logging.info("Location validated by user")
                 break
-        return EarthLocation(lat=u_lat, lon=u_lon, height=u_height)
+
+        location: SkyCoord = EarthLocation(lat=u_lat, lon=u_lon, height=u_height)
+        logging.debug(f"Location: {location}")
+        return location
 
 
 #Get telescope target location (local and non-local objects)
@@ -188,25 +197,36 @@ def get_target_location(t_location: EarthLocation,
     while True:
         try:
             object_name = get_non_empty_string("Enter target name: ")
+            logging.info("Parsed sky target name from user")
             observer_frame = AltAz(obstime=l_time, location=t_location)
 
             if object_name.lower() in local_objects_check:
                 print("Local object identified")
+                logging.info("Local object detected")
                 target_ra_dec = get_body(object_name, l_time)
+                logging.info("Local object data parsed successfully")
                 target_location = target_ra_dec.transform_to(observer_frame)
 
                 if target_location.alt < 0 * u.deg: #Checks if above horizon
                     print("Object below horizon, try again")
+                    logging.warning("Object below horizon")
                     continue
+
+                logging.debug(f"Target location = {target_location}")
                 return target_location
 
+            logging.info("Deep sky object detected")
             target_ra_dec = SkyCoord.from_name(object_name.lower())
+            logging.info("Deep sky object data parsed successfully")
             target_location = target_ra_dec.transform_to(observer_frame)
             print("Deep sky object identified")
 
             if target_location.alt < 0 * u.deg: #Checks if above horizon
                 print("Object below horizon, try again")
+                logging.warning("Object below horizon")
                 continue
+
+            logging.debug(f"Target location: {target_location}")
             return target_location
         
         except NameResolveError:
@@ -235,15 +255,21 @@ def get_mount_angles(icrs_data: SkyCoord, location: EarthLocation,
     """
     local_sidereal_time = local_time.sidereal_time("apparent", #Local RA
                                                    longitude=location.lon)
-    #For initial positioning
+    logging.debug(f"LST = {local_sidereal_time}")
+
     dec_deg = icrs_data.dec.deg
     ra_deg = icrs_data.ra.deg
+    logging.info("RA and DEC successfully parsed from icrs data")
 
     #The hour angle = (LST - RA)
     hour_angle = (local_sidereal_time - icrs_data.ra).wrap_at(180 * u.deg)
     hour_angle_deg = hour_angle.to(u.deg).value #For tracking
+    logging.debug(f"Calculated local hour angle at {hour_angle_deg}")
 
-    return hour_angle_deg, dec_deg, ra_deg
+    motor_data_tuple = (hour_angle_deg, dec_deg, ra_deg)
+    logging.info("Generated position data for mount")
+    logging.debug(f"data = {motor_data_tuple}")
+    return motor_data_tuple
 
 #=====================================================================#
 """Main code"""
@@ -251,20 +277,24 @@ if __name__ == "__main__":
     print("Starting Program")
 
     current_time = Time.now()
+    logging.debug(f"Generated time = {current_time}")
+
     observer_location: EarthLocation = (get_location_info())
+
     while True:
         target_location: SkyCoord = get_target_location(observer_location,
                                                         current_time)
         #Gets format to parse RA and DEC angles
         icrs_value_target = target_location.transform_to("icrs")
-        mount_angles: tuple[float,float] = get_mount_angles(
-                    icrs_value_target, observer_location, current_time)
+        logging.debug(f"Converted target data to icrs = {icrs_value_target}")
+
+        mount_angles: tuple[float,float] = get_mount_angles(icrs_value_target,
+                                            observer_location, current_time)
 
         print(f"Hour angle = {mount_angles[0]:.2f}\n"
               f"Declination = {mount_angles[1]:.2f}\n"
               f"Right Ascension = {mount_angles[2]:.2f}\n"
               f"Altitude = {target_location.alt.deg:.2f}\n")
-
 
 
 

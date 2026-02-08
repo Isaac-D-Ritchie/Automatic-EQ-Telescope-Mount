@@ -1,0 +1,32 @@
+2026-02-08 06:12:30 - DEBUG - Generated time = 2026-02-08 06:12:30.375854
+2026-02-08 06:12:38 - INFO - Location data parsed from user
+2026-02-08 06:12:40 - INFO - Location validated by user
+2026-02-08 06:12:40 - DEBUG - Location: (3788287.1825798033, -191906.34990996143, 5110454.651061012) m
+2026-02-08 06:12:45 - INFO - Parsed sky target name from user
+2026-02-08 06:12:45 - INFO - Local object detected
+2026-02-08 06:12:45 - INFO - Local object data parsed successfully
+2026-02-08 06:12:45 - DEBUG - Target location = <SkyCoord (AltAz: obstime=2026-02-08 06:12:30.375854, location=(3788287.1825798033, -191906.34990996143, 5110454.651061012) m, pressure=0.0 hPa, temperature=0.0 deg_C, relative_humidity=0.0, obswl=1.0 micron): (az, alt, distance) in (deg, deg, AU)
+    (307.3674586, 1.87033774, 4.36986689)>
+2026-02-08 06:12:45 - DEBUG - Converted target data to icrs = <SkyCoord (ICRS): (ra, dec, distance) in (deg, deg, AU)
+    (113.99029059, 21.87575805, 5.22165398)>
+2026-02-08 06:12:45 - DEBUG - LST = 15.239935247754856 hourangle
+2026-02-08 06:12:45 - INFO - RA and DEC successfully parsed from icrs data
+2026-02-08 06:12:45 - DEBUG - Calculated local hour angle at 114.60873812151851
+2026-02-08 06:12:45 - INFO - Generated position data for mount
+2026-02-08 06:12:45 - DEBUG - data = (np.float64(114.60873812151851), np.float64(21.87575805130554), np.float64(113.99029059480429))
+2026-02-08 06:12:48 - INFO - Parsed sky target name from user
+2026-02-08 06:12:48 - INFO - Deep sky object detected
+2026-02-08 06:12:48 - INFO - Deep sky object data parsed successfully
+2026-02-08 06:12:48 - DEBUG - Target location: <SkyCoord (AltAz: obstime=2026-02-08 06:12:30.375854, location=(3788287.1825798033, -191906.34990996143, 5110454.651061012) m, pressure=0.0 hPa, temperature=0.0 deg_C, relative_humidity=0.0, obswl=1.0 micron): (az, alt) in deg
+    (0.0394283, 52.98023388)>
+2026-02-08 06:12:48 - DEBUG - Converted target data to icrs = <SkyCoord (ICRS): (ra, dec) in deg
+    (37.95456067, 89.26410897)>
+2026-02-08 06:12:48 - DEBUG - LST = 15.239935247754856 hourangle
+2026-02-08 06:12:48 - INFO - RA and DEC successfully parsed from icrs data
+2026-02-08 06:12:48 - DEBUG - Calculated local hour angle at -169.3555319536143
+2026-02-08 06:12:48 - INFO - Generated position data for mount
+2026-02-08 06:12:48 - DEBUG - data = (np.float64(-169.3555319536143), np.float64(89.26410897000528), np.float64(37.954560669937095))
+2026-02-08 06:12:52 - INFO - Parsed sky target name from user
+2026-02-08 06:12:52 - INFO - Deep sky object detected
+2026-02-08 06:12:52 - INFO - Deep sky object data parsed successfully
+2026-02-08 06:12:52 - WARNING - Object below horizon
