@@ -139,7 +139,7 @@ def get_location_info() -> EarthLocation:
             print(f"\nCurrent Information\n"
                   f"Latitude: {latitude}°\n"
                   f"Longitude: {longitude}°\n"
-                  f"Sea level: {sea_level}m\n"
+                  f"Sea level: {sea_level}m"
                 )
             while True: #Input confirmation
                 confirm = safe_input("Is this correct? (Y/N)").lower()
