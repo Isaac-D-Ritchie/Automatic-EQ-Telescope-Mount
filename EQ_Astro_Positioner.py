@@ -194,7 +194,7 @@ def get_target_location(t_location: EarthLocation,
 
 
 #Get mount angles in HA and DEC
-def get_mount_angles(icrs_data: SkyCoord, location, local_time) -> tuple[float, float, float]:
+def get_mount_angles(icrs_data: SkyCoord, location: EarthLocation, local_time: Time) -> tuple[float, float, float]:
     """
     Function takes all the gathered user data and calculates the equatorial
     angles for the mount. 
