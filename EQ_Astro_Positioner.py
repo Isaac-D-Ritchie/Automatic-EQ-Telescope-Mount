@@ -14,6 +14,7 @@ from astropy.coordinates import SkyCoord #For sky object coordinates
     #u.ra - Right ascension
     #u.dec - Declination
     #u.from_name - Gets coords from object name
+from astropy.coordinates import get_body #For solar system objects
 from astropy.coordinates.name_resolve import NameResolveError
 from astropy.coordinates import AltAz #For checking horizon location
     #u.alt - gets altitude
@@ -143,7 +144,7 @@ def get_location_info() -> EarthLocation:
         return EarthLocation(lat=u_lat, lon=u_lon, height=u_height)
 
 
-#Get telescope target location (except solar system objects)
+#Get telescope target location (local and non-local objects)
 def get_target_location(t_location: EarthLocation,
                         l_time: Time) -> SkyCoord:
     """
@@ -159,16 +160,20 @@ def get_target_location(t_location: EarthLocation,
     while True:
         try:
             local_objects_check = [
-            "sun","mercury", "venus", "earth-moon-barycenter", "earth", "moon",
-            "mars", "jupiter", "saturn","uranus", "neptune", "pluto"]
+            "sun","mercury","venus","earth-moon-barycenter","earth",
+            "moon","mars","jupiter","saturn","uranus","neptune","pluto"]
 
             object_name = get_non_empty_string("Enter target name: ")
 
             if object_name.lower() in local_objects_check:
                 print("Local object identified")
-                return get_planet_location()
+                target_ra_dec = get_body(object_name, l_time)
+                observer_frame = AltAz(obstime=l_time, location=t_location)
+                target_location = target_ra_dec.transform_to(observer_frame)
+                return target_location
 
-            target_ra_dec = SkyCoord.from_name(object_name)
+            print("Object identified")
+            target_ra_dec = SkyCoord.from_name(object_name.lower())
             observer_frame = AltAz(obstime=l_time, location=t_location)
             target_location: SkyCoord = target_ra_dec.transform_to(observer_frame)
             return target_location
@@ -176,15 +181,6 @@ def get_target_location(t_location: EarthLocation,
         except NameResolveError:
             print(f"\nError: {object_name} Not fount")
             continue
-
-
-#Get planet location
-def get_planet_location():
-    local_objects = [
-        "sun","mercury", "venus", "earth-moon-barycenter", "earth",
-        "moon", "mars", "jupiter", "saturn","uranus", "neptune", "pluto"]
-    #To be developed
-    return
 
 #=====================================================================#
 """Testing variables"""
