@@ -169,7 +169,7 @@ def get_target_location(t_location: EarthLocation,
                 print("Local object identified")
                 target_ra_dec = get_body(object_name, l_time)
                 observer_frame = AltAz(obstime=l_time, location=t_location)
-                target_location = target_ra_dec.transform_to(observer_frame)
+                target_location: SkyCoord = target_ra_dec.transform_to(observer_frame)
                 return target_location
 
             print("Object identified")
