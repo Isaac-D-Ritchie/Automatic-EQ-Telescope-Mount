@@ -25,16 +25,21 @@ def config_logging() -> bool:
     return enable_logging
     
 
-"""Electronic motor config (custom to part)"""
-steps_per_rev = 0 #TBD
-microsteping = 0
+"""Electronic motor config (custom to motor/telescope)"""
+#Can be edited
+steps_per_rev = 0
+microsteps_per_step = 0
 ra_gear_ratio = 0
 dec_gear_ratio = 0
-total_steps_ra = (steps_per_rev * microsteping * ra_gear_ratio)
-steps_per_deg = total_steps_ra / 360 #calculates motor steps per 1 ra deg
+
+#Calculates other values based on motor/telescope config values
+total_steps_per_full_ra = (steps_per_rev * microsteps_per_step * ra_gear_ratio)
+microsteps_per_deg = total_steps_per_full_ra / 360
+microsteps_per_rev = (steps_per_rev * microsteps_per_step)
 
 
 """Mount protection (Fixed constants)"""
+#Prevents overturning
 max_dec = 180
 min_dec = -180
 max_hour_angle = -90
