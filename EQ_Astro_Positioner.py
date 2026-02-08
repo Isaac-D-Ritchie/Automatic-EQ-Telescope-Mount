@@ -32,6 +32,18 @@ import astropy.units as u #Astropy units:
     #u.hourangle = hours used for RA
     #u.arcsec = arcseconds
 
+import logging
+
+"""Config"""
+
+    enable_logging = True #Logging toggle, true = logging on
+
+    if enable_logging:
+        logging.basicConfig( #Logging congig
+                filename="asteps.log", level= logging.DEBUG,
+                format= "%(asctime)s - %(levelname)s - %(message)s",
+                datefmt= "%Y-%m-%d %H:%M:%S", filemode= "a")
+
 #=====================================================================#
 """Functions"""
 #Get safe input (from my reusable function collection)
