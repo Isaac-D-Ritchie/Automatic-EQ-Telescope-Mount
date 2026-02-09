@@ -1,14 +1,13 @@
 """
 Configuration settings for ASTEPS including:
-logging setup
-motor specs
-Mount protection
-Tracking
+    #logging setup
+    #motor specs
+    #Mount protection
+    #Tracking constants
 """
-import logging
-
 
 """Logging config"""
+import logging
 enable_logging = True #Logging toggle
 
 def config_logging() -> bool:
@@ -44,3 +43,5 @@ max_dec = 180
 min_dec = -180
 max_hour_angle = -90
 min_hour_angle = 90
+
+"""Tracking constants"""
