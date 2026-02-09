@@ -1,4 +1,9 @@
 # ASTEPS - Astronomical Equatorial Positioning System
+# Version 0.1.0 
+- Functional sky object position calculator
+- main script file (main.py)
+- logging (asteps.log)
+- virtual environment folder (.venv)
 
 
 ## Repository Description
