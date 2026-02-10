@@ -1,0 +1,32 @@
+2026-02-10 22:09:42 - DEBUG - Generated time = 2026-02-10 22:09:42.121483
+2026-02-10 22:09:51 - INFO - Location data parsed from user
+2026-02-10 22:09:52 - INFO - Location validated by user
+2026-02-10 22:09:52 - DEBUG - Location: (3752069.463614437, -196637.62830374623, 5136748.685531028) m
+2026-02-10 22:09:55 - INFO - Parsed sky target name from user
+2026-02-10 22:09:55 - INFO - Local object detected
+2026-02-10 22:09:55 - INFO - Local object data parsed successfully
+2026-02-10 22:09:55 - WARNING - Object below horizon
+2026-02-10 22:10:05 - INFO - Parsed sky target name from user
+2026-02-10 22:10:05 - INFO - Deep sky object detected
+2026-02-10 22:10:05 - INFO - Deep sky object data parsed successfully
+2026-02-10 22:10:05 - DEBUG - Target location: <SkyCoord (AltAz: obstime=2026-02-10 22:09:42.121483, location=(3752069.463614437, -196637.62830374623, 5136748.685531028) m, pressure=0.0 hPa, temperature=0.0 deg_C, relative_humidity=0.0, obswl=1.0 micron): (az, alt) in deg
+    (359.04494105, 54.26775263)>
+2026-02-10 22:10:05 - DEBUG - Converted target data to icrs = <SkyCoord (ICRS): (ra, dec) in deg
+    (37.95456067, 89.26410897)>
+2026-02-10 22:10:05 - DEBUG - LST = 7.361630467724203 hourangle
+2026-02-10 22:10:05 - INFO - RA and DEC successfully parsed from icrs data
+2026-02-10 22:10:05 - DEBUG - Calculated local hour angle at 72.46989634594625
+2026-02-10 22:10:05 - INFO - Generated position data for mount
+2026-02-10 22:10:05 - DEBUG - data = (np.float64(72.46989634594625), np.float64(89.26410897000568), np.float64(37.95456066991679))
+2026-02-10 22:10:10 - INFO - Parsed sky target name from user
+2026-02-10 22:10:10 - INFO - Local object detected
+2026-02-10 22:10:10 - INFO - Local object data parsed successfully
+2026-02-10 22:10:10 - DEBUG - Target location = <SkyCoord (AltAz: obstime=2026-02-10 22:09:42.121483, location=(3752069.463614437, -196637.62830374623, 5136748.685531028) m, pressure=0.0 hPa, temperature=0.0 deg_C, relative_humidity=0.0, obswl=1.0 micron): (az, alt, distance) in (deg, deg, AU)
+    (184.68762204, 58.69125104, 4.39447619)>
+2026-02-10 22:10:10 - DEBUG - Converted target data to icrs = <SkyCoord (ICRS): (ra, dec, distance) in (deg, deg, AU)
+    (114.22402048, 21.84498204, 5.22262755)>
+2026-02-10 22:10:10 - DEBUG - LST = 7.361630467724203 hourangle
+2026-02-10 22:10:10 - INFO - RA and DEC successfully parsed from icrs data
+2026-02-10 22:10:10 - DEBUG - Calculated local hour angle at -3.7995634652589456
+2026-02-10 22:10:10 - INFO - Generated position data for mount
+2026-02-10 22:10:10 - DEBUG - data = (np.float64(-3.7995634652589456), np.float64(21.84498204190302), np.float64(114.22402048112197))

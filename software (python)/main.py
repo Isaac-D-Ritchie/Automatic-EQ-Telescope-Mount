@@ -18,8 +18,7 @@ This main file imports functions from other files in /software (python)
 
 """Imports"""
 import config
-import logging
-from config import config_logging
+from config import logger
 import reuseable_functions
 import astropy_positions
 
@@ -29,7 +28,7 @@ if __name__ == "__main__":
     print("Starting Program")
 
     current_time = astropy_positions.get_time()
-    logging.debug(f"Generated time = {current_time}")
+    logger.debug(f"Generated time = {current_time}")
 
     observer_location: EarthLocation = (astropy_positions.get_location_info())
 
@@ -38,7 +37,7 @@ if __name__ == "__main__":
                                                         current_time)
         #Gets format to parse RA and DEC angles
         icrs_value_target = target_location.transform_to("icrs")
-        logging.debug(f"Converted target data to icrs = {icrs_value_target}")
+        logger.debug(f"Converted target data to icrs = {icrs_value_target}")
 
         mount_angles: tuple[float,float] = astropy_positions.get_mount_angles(icrs_value_target,
                                             observer_location, current_time)

@@ -1,5 +1,10 @@
 """
+This file contains all of the positioning functions used to transform
+the user inputs into astrological coordinates for the telescope.
 
+This file imports functions from other files in /software (python)
+    # config_and_logging
+    # reuseable_functions)
 """
 
 
@@ -26,8 +31,7 @@ import astropy.units as u #Astropy units:
     #u.arcsec = arcseconds
 
 import reuseable_functions #for safe inputs
-import logging
-from config import config_logging
+from config import logger
 
 
 """Functions"""
@@ -55,7 +59,7 @@ def get_location_info() -> EarthLocation:
             u_lon = (longitude * u.deg)
             u_height = (sea_level * u.m)
 
-            logging.info("Location data parsed from user")
+            logger.info("Location data parsed from user")
             print(f"\nCurrent Information\n"
                   f"Latitude: {latitude}°\n"
                   f"Longitude: {longitude}°\n"
@@ -66,17 +70,17 @@ def get_location_info() -> EarthLocation:
                 if confirm == "y":
                     break
                 elif confirm == "n":
-                    logging.info("Location voided by user")
+                    logger.info("Location voided by user")
                     break
                 else:
                     continue
 
             if confirm == "y":
-                logging.info("Location validated by user")
+                logger.info("Location validated by user")
                 break
 
         location: SkyCoord = EarthLocation(lat=u_lat, lon=u_lon, height=u_height)
-        logging.debug(f"Location: {location}")
+        logger.debug(f"Location: {location}")
         return location
 
 
@@ -100,41 +104,41 @@ def get_target_location(t_location: EarthLocation,
     while True:
         try:
             object_name = reuseable_functions.get_non_empty_string("Enter target name: ")
-            logging.info("Parsed sky target name from user")
+            logger.info("Parsed sky target name from user")
             observer_frame = AltAz(obstime=l_time, location=t_location)
 
             if object_name.lower() in local_objects_check:
                 print("Local object identified")
-                logging.info("Local object detected")
+                logger.info("Local object detected")
                 target_ra_dec = get_body(object_name, l_time)
-                logging.info("Local object data parsed successfully")
+                logger.info("Local object data parsed successfully")
                 target_location = target_ra_dec.transform_to(observer_frame)
 
                 if target_location.alt < 0 * u.deg: #Checks if above horizon
                     print("Object below horizon, try again")
-                    logging.warning("Object below horizon")
+                    logger.warning("Object below horizon")
                     continue
 
-                logging.debug(f"Target location = {target_location}")
+                logger.debug(f"Target location = {target_location}")
                 return target_location
 
-            logging.info("Deep sky object detected")
+            logger.info("Deep sky object detected")
             target_ra_dec = SkyCoord.from_name(object_name.lower())
-            logging.info("Deep sky object data parsed successfully")
+            logger.info("Deep sky object data parsed successfully")
             target_location = target_ra_dec.transform_to(observer_frame)
             print("Deep sky object identified")
 
             if target_location.alt < 0 * u.deg: #Checks if above horizon
                 print("Object below horizon, try again")
-                logging.warning("Object below horizon")
+                logger.warning("Object below horizon")
                 continue
 
-            logging.debug(f"Target location: {target_location}")
+            logger.debug(f"Target location: {target_location}")
             return target_location
         
         except NameResolveError:
             print(f"\nError: {object_name} Not fount")
-            logging.error("Object not found")
+            logger.error("Object not found")
             continue
 
 
@@ -158,18 +162,18 @@ def get_mount_angles(icrs_data: SkyCoord, location: EarthLocation,
     """
     local_sidereal_time = local_time.sidereal_time("apparent", #Local RA
                                                    longitude=location.lon)
-    logging.debug(f"LST = {local_sidereal_time}")
+    logger.debug(f"LST = {local_sidereal_time}")
 
     dec_deg = icrs_data.dec.deg
     ra_deg = icrs_data.ra.deg
-    logging.info("RA and DEC successfully parsed from icrs data")
+    logger.info("RA and DEC successfully parsed from icrs data")
 
     #The hour angle = (LST - RA)
     hour_angle = (local_sidereal_time - icrs_data.ra).wrap_at(180 * u.deg)
     hour_angle_deg = hour_angle.to(u.deg).value #For tracking
-    logging.debug(f"Calculated local hour angle at {hour_angle_deg}")
+    logger.debug(f"Calculated local hour angle at {hour_angle_deg}")
 
     motor_data_tuple = (hour_angle_deg, dec_deg, ra_deg)
-    logging.info("Generated position data for mount")
-    logging.debug(f"data = {motor_data_tuple}")
+    logger.info("Generated position data for mount")
+    logger.debug(f"data = {motor_data_tuple}")
     return motor_data_tuple

@@ -4,6 +4,9 @@ in the main code for validating safe inputs from the user.
 """
 
 
+"""Imports"""
+from config import logger
+
 
 """Functions"""
 def safe_input(prompt: str) -> str:
@@ -40,7 +43,7 @@ def get_non_empty_string(prompt: str) -> str:
 
         if sanitized_input == "":
             print("\nError: Input cannot be empty")
-            logging.error("Empty Input")
+            logger.error("Empty Input")
             continue
         else:
             return sanitized_input
@@ -66,14 +69,14 @@ def get_valid_float(prompt, min_value: float = None,
 
         if not sanitized_input:
             print("\nError: Input cannot be empty")
-            logging.error("Empty Input")
+            logger.error("Empty Input")
             continue
 
         try:
             float_value = float(raw_input)
         except ValueError:
             print("\nError: Invalid float value")
-            logging.error("Invalid float input")
+            logger.error("Invalid float input")
             continue
 
         if min_value is not None and float_value < min_value:

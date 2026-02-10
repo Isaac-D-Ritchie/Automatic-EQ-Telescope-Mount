@@ -1,32 +1,36 @@
 """
+This file contains all the config settings and constants used for the
+software and hardware
+
 Configuration settings for ASTEPS including:
     #logging setup
     #motor specs
-    #Mount protection
     #Tracking constants
 """
-
+"""Imports"""
+import logging
+import os
 
 
 """Logging config"""
 enable_logging = True #Logging toggle
 
-def config_logging() -> bool:
-    """
-    Function to configure logging settings if logging is enabled.
-    Return:
-        true or false bool (logging enabled status)
-    """
-    if enable_logging:
-        logging.basicConfig(
-                filename="asteps.log", level= logging.DEBUG,
-                format= "%(asctime)s - %(levelname)s - %(message)s",
-                datefmt= "%Y-%m-%d %H:%M:%S", filemode= "a")
-    return enable_logging
+if enable_logging:
+    current_folder = os.path.dirname(__file__)
+    project_folder = os.path.abspath(os.path.join(current_folder, ".."))
+    LOG_FILE = os.path.join(os.path.dirname(current_folder), "asteps.log")
+
+    # Configure the logger
+    logging.basicConfig(
+        filename=LOG_FILE,
+        level=logging.DEBUG,
+        format="%(asctime)s - %(levelname)s - %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S", filemode="a")
     
+    logger = logging.getLogger("asteps")
 
 
-"""Electronic motor config (custom to motor/telescope)"""
+"""Hardware config"""
 #Can be edited
 steps_per_rev = 0
 microsteps_per_step = 0
@@ -37,16 +41,6 @@ dec_gear_ratio = 0
 total_steps_per_full_ra = (steps_per_rev * microsteps_per_step * ra_gear_ratio)
 microsteps_per_deg = total_steps_per_full_ra / 360
 microsteps_per_rev = (steps_per_rev * microsteps_per_step)
-
-
-
-"""Mount protection (Fixed constants)"""
-#Prevents overturning
-max_dec = 180
-min_dec = -180
-max_hour_angle = -90
-min_hour_angle = 90
-
 
 
 """Tracking constants"""
