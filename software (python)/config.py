@@ -6,8 +6,9 @@ Configuration settings for ASTEPS including:
     #Tracking constants
 """
 
+
+
 """Logging config"""
-import logging
 enable_logging = True #Logging toggle
 
 def config_logging() -> bool:
@@ -24,6 +25,7 @@ def config_logging() -> bool:
     return enable_logging
     
 
+
 """Electronic motor config (custom to motor/telescope)"""
 #Can be edited
 steps_per_rev = 0
@@ -37,11 +39,14 @@ microsteps_per_deg = total_steps_per_full_ra / 360
 microsteps_per_rev = (steps_per_rev * microsteps_per_step)
 
 
+
 """Mount protection (Fixed constants)"""
 #Prevents overturning
 max_dec = 180
 min_dec = -180
 max_hour_angle = -90
 min_hour_angle = 90
+
+
 
 """Tracking constants"""
