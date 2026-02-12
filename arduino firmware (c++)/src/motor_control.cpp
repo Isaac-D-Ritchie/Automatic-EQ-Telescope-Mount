@@ -25,7 +25,8 @@ void move_motor_1_clockwise(int steps, int pulse_delay) {
     for (int i = 0; i < steps; i++) {
         digitalWrite(step_pin_1, HIGH);
         delayMicroseconds(pulse_delay);
-        digitalWrite(step_pin_1, LOW); 
+        digitalWrite(step_pin_1, LOW);
+        delayMicroseconds(pulse_delay);
       }
 
       digitalWrite(en_pin, HIGH); //Cuts motor power
@@ -41,7 +42,8 @@ void move_motor_1_anti_clockwise(int steps, int pulse_delay) {
     for (int i = 0; i < steps; i++) { 
         digitalWrite(step_pin_1, HIGH);
         delayMicroseconds(pulse_delay);
-        digitalWrite(step_pin_1, LOW); 
+        digitalWrite(step_pin_1, LOW);
+        delayMicroseconds(pulse_delay); 
       }
 
       digitalWrite(en_pin, HIGH); //Cuts motor power
@@ -57,7 +59,8 @@ void move_motor_2_clockwise(int steps, int pulse_delay) {
     for (int i = 0; i < steps; i++) {
         digitalWrite(step_pin_2, HIGH);
         delayMicroseconds(pulse_delay);
-        digitalWrite(step_pin_2, LOW); 
+        digitalWrite(step_pin_2, LOW);
+        delayMicroseconds(pulse_delay);
       }
 
       digitalWrite(en_pin, HIGH); //Cuts motor power
@@ -73,7 +76,8 @@ void move_motor_2_anti_clockwise(int steps, int pulse_delay) {
     for (int i = 0; i < steps; i++) {
         digitalWrite(step_pin_2, HIGH);
         delayMicroseconds(pulse_delay);
-        digitalWrite(step_pin_2, LOW); 
+        digitalWrite(step_pin_2, LOW);
+        delayMicroseconds(pulse_delay);
       }
 
     digitalWrite(en_pin, HIGH); //Cuts motor power
