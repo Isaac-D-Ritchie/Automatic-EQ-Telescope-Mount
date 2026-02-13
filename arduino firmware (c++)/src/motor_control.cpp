@@ -36,8 +36,6 @@ void move_motor(int steps, int pulse_delay,int en_pin, int step_pin, int dir_pin
 
 // Setup code (runs once)
 void setup() {
-  digitalWrite(en_pin_1, HIGH); //Motor power (off)
-  digitalWrite(en_pin_2, HIGH);
   pinMode(step_pin_1, OUTPUT);
   pinMode(dir_pin_1, OUTPUT);
   pinMode(en_pin_1, OUTPUT);
@@ -46,6 +44,8 @@ void setup() {
   pinMode(en_pin_2, OUTPUT);
   pinMode(green_led, OUTPUT);
   pinMode(red_led, OUTPUT);
+  digitalWrite(en_pin_1, HIGH); //Motor 1 power (off)
+  digitalWrite(en_pin_2, HIGH); //Motor 2 power (off)
 
   Serial.begin(9600);
 }
