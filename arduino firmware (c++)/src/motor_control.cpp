@@ -17,73 +17,21 @@
 
 
 //Functions
-void move_motor_1_clockwise(int steps, int pulse_delay) {
-    digitalWrite(en_pin_1, LOW); //Powers motor
-    digitalWrite(dir_pin_1, HIGH); //Sets to clockwise
-    digitalWrite(green_led, LOW); //Motor LED
+void move_motor(int steps, int pulse_delay,int en_pin, int step_pin, int dir_pin, bool dir) {
+    digitalWrite(en_pin, LOW); //Powers motor
+    digitalWrite(green_led, LOW); //Motor power LED
+    digitalWrite(dir_pin, dir); //HIGH = clockwise LOW = anti-clockwise
 
     for (int i = 0; i < steps; i++) {
-        digitalWrite(step_pin_1, HIGH);
+        digitalWrite(step_pin, HIGH);
         delayMicroseconds(pulse_delay);
-        digitalWrite(step_pin_1, LOW);
+        digitalWrite(step_pin, LOW);
         delayMicroseconds(pulse_delay);
       }
 
-      digitalWrite(en_pin_1, HIGH); //Cuts motor power
+      digitalWrite(en_pin, HIGH); //Cuts motor power
       digitalWrite(green_led, HIGH); 
 }
-
-
-void move_motor_1_anti_clockwise(int steps, int pulse_delay) {
-    digitalWrite(en_pin_1, LOW); //Powers motor
-    digitalWrite(dir_pin_1, LOW); //Sets to anti-clockwise
-    digitalWrite(green_led, LOW); //Motor LED
-
-    for (int i = 0; i < steps; i++) { 
-        digitalWrite(step_pin_1, HIGH);
-        delayMicroseconds(pulse_delay);
-        digitalWrite(step_pin_1, LOW);
-        delayMicroseconds(pulse_delay); 
-      }
-
-      digitalWrite(en_pin_1, HIGH); //Cuts motor power
-      digitalWrite(green_led, HIGH); 
-}
-
-
-void move_motor_2_clockwise(int steps, int pulse_delay) {
-    digitalWrite(en_pin_2, LOW); //Powers motor
-    digitalWrite(dir_pin_2, HIGH); //Sets to clockwise
-    digitalWrite(green_led, LOW); //Motor LED
-
-    for (int i = 0; i < steps; i++) {
-        digitalWrite(step_pin_2, HIGH);
-        delayMicroseconds(pulse_delay);
-        digitalWrite(step_pin_2, LOW);
-        delayMicroseconds(pulse_delay);
-      }
-
-      digitalWrite(en_pin_2, HIGH); //Cuts motor power
-      digitalWrite(green_led, HIGH); 
-}
-
-
-void move_motor_2_anti_clockwise(int steps, int pulse_delay) {
-    digitalWrite(en_pin_2, LOW); //Powers motor
-    digitalWrite(dir_pin_2, LOW); //Sets to anti-clockwise
-    digitalWrite(green_led, LOW); //Motor LED
-
-    for (int i = 0; i < steps; i++) {
-        digitalWrite(step_pin_2, HIGH);
-        delayMicroseconds(pulse_delay);
-        digitalWrite(step_pin_2, LOW);
-        delayMicroseconds(pulse_delay);
-      }
-
-    digitalWrite(en_pin_2, HIGH); //Cuts motor power
-    digitalWrite(green_led, HIGH); 
-}
-
 
 
 // Setup code (runs once)
@@ -107,12 +55,15 @@ void setup() {
 void loop() {
   digitalWrite(red_led, LOW); //Power indicator
 
-  move_motor_1_clockwise(3200, 800); //Motor 1 Test
-  delay(1000);
-  move_motor_1_anti_clockwise(3200, 800);
-  delay(1000);
-  move_motor_2_clockwise(3200, 800); //Motor 2 Test
-  delay(1000);
-  move_motor_2_anti_clockwise(3200, 800);
-  delay(1000);
+  //Motor 1 Test
+  move_motor(3200, 800, en_pin_1, step_pin_1, dir_pin_1, HIGH);
+  delay(1000); //Clockwise
+  move_motor(3200, 800, en_pin_1, step_pin_1, dir_pin_1, LOW);
+  delay(1000); //Anti-clockwise
+
+  //Motor 2 Test
+  move_motor(3200, 800, en_pin_2, step_pin_2, dir_pin_2, HIGH);
+  delay(1000); //Clockwise
+  move_motor(3200, 800, en_pin_2, step_pin_2, dir_pin_2, LOW);
+  delay(1000); //Anti-clockwise
 }
