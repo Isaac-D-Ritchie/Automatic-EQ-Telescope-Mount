@@ -12,14 +12,14 @@
 #define en_pin_2 7
 //LEDs
 #define red_led 8
-#define green_led 9
+#define blue_led 9
 
 
 
 //Functions
 void move_motor(int steps, int pulse_delay,int en_pin, int step_pin, int dir_pin, bool dir) {
     digitalWrite(en_pin, LOW); //Powers motor
-    digitalWrite(green_led, LOW); //Motor power LED
+    digitalWrite(blue_led, LOW); //Motor power LED
     digitalWrite(dir_pin, dir); //HIGH = clockwise LOW = anti-clockwise
 
     for (int i = 0; i < steps; i++) {
@@ -30,7 +30,7 @@ void move_motor(int steps, int pulse_delay,int en_pin, int step_pin, int dir_pin
       }
 
       digitalWrite(en_pin, HIGH); //Cuts motor power
-      digitalWrite(green_led, HIGH); 
+      digitalWrite(blue_led, HIGH); 
 }
 
 
@@ -42,7 +42,7 @@ void setup() {
   pinMode(step_pin_2, OUTPUT);
   pinMode(dir_pin_2, OUTPUT);
   pinMode(en_pin_2, OUTPUT);
-  pinMode(green_led, OUTPUT);
+  pinMode(blue_led, OUTPUT);
   pinMode(red_led, OUTPUT);
   digitalWrite(en_pin_1, HIGH); //Motor 1 power (off)
   digitalWrite(en_pin_2, HIGH); //Motor 2 power (off)
