@@ -19,11 +19,8 @@
 #define stick_y A2
 
 
-
 //Functions
-void move_motor(int steps, int pulse_delay,int en_pin, int step_pin, int dir_pin, bool dir) {
-    digitalWrite(en_pin, LOW); //Powers motor
-    digitalWrite(blue_led, LOW); //Motor power LED
+void move_motor(int steps, int pulse_delay, int step_pin, int dir_pin, bool dir) {
     digitalWrite(dir_pin, dir); //HIGH = clockwise LOW = anti-clockwise
 
     for (int i = 0; i < steps; i++) {
@@ -32,9 +29,16 @@ void move_motor(int steps, int pulse_delay,int en_pin, int step_pin, int dir_pin
         digitalWrite(step_pin, LOW);
         delayMicroseconds(pulse_delay);
       }
+}
 
-      digitalWrite(en_pin, HIGH); //Cuts motor power
-      digitalWrite(blue_led, HIGH); 
+void enable_motor(int en_pin) {
+  digitalWrite(en_pin, LOW); //Powers TMC 2209
+  digitalWrite(blue_led, LOW); //Motor LED
+}
+
+void disable_motor(int en_pin) {
+  digitalWrite(en_pin, HIGH); //Cuts TMC 2209 power
+  digitalWrite(blue_led, HIGH); //Cuts motor LED
 }
 
 
@@ -60,27 +64,50 @@ void setup() {
 void loop() {
   digitalWrite(red_led, LOW); //Power indicator
 
-  //Joy-Stick Test
+  //Joystick controls
   int x = analogRead(stick_x);
   int y = analogRead(stick_y);
   bool button = digitalRead(stick_sw);
+
+  //Prints joystick reading to serial output
   Serial.print("X: ");
   Serial.print(x);
   Serial.print("  Y: ");
   Serial.print(y);
   Serial.print("  Button: ");
   Serial.println(button);
-  delay(100);
 
-  //Motor 1 Test
-   //move_motor(3200, 800, en_pin_1, step_pin_1, dir_pin_1, HIGH);
-   //delay(1000); //Clockwise
-   //move_motor(3200, 800, en_pin_1, step_pin_1, dir_pin_1, LOW);
-   //delay(1000); //Anti-clockwise
+  //Motor 1
+  if (x > 600) {
+    enable_motor(en_pin_1);
+    move_motor(10, 650, step_pin_1, dir_pin_1, HIGH); //Clockwise
+  }
+  else {
+    disable_motor(en_pin_1);
+  }
 
-  //Motor 2 Test
-   //move_motor(3200, 800, en_pin_2, step_pin_2, dir_pin_2, HIGH);
-   //delay(1000); //Clockwise
-   //move_motor(3200, 800, en_pin_2, step_pin_2, dir_pin_2, LOW);
-   //delay(1000); //Anti-clockwise
+  if (x < 400) {
+    enable_motor(en_pin_1);
+    move_motor(10, 650, step_pin_1, dir_pin_1, LOW); //Anti-clockwise
+  }
+  else {
+    disable_motor(en_pin_1);
+  }
+
+  //Motor 2
+  if (y > 600) {
+    enable_motor(en_pin_2);
+    move_motor(10, 650, step_pin_2, dir_pin_2, HIGH); //Clockwise
+  }
+  else {
+    disable_motor(en_pin_2);
+  }
+  
+  if (y < 400) {
+    enable_motor(en_pin_2);
+    move_motor(10, 650, step_pin_2, dir_pin_2, LOW); //Anti-clockwise
+  }
+  else {
+    disable_motor(en_pin_2);
+  }
 }
