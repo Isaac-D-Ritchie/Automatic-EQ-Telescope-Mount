@@ -73,14 +73,14 @@ void loop() {
   delay(100);
 
   //Motor 1 Test
-  move_motor(3200, 800, en_pin_1, step_pin_1, dir_pin_1, HIGH);
-  delay(1000); //Clockwise
-  move_motor(3200, 800, en_pin_1, step_pin_1, dir_pin_1, LOW);
-  delay(1000); //Anti-clockwise
+   //move_motor(3200, 800, en_pin_1, step_pin_1, dir_pin_1, HIGH);
+   //delay(1000); //Clockwise
+   //move_motor(3200, 800, en_pin_1, step_pin_1, dir_pin_1, LOW);
+   //delay(1000); //Anti-clockwise
 
   //Motor 2 Test
-  move_motor(3200, 800, en_pin_2, step_pin_2, dir_pin_2, HIGH);
-  delay(1000); //Clockwise
-  move_motor(3200, 800, en_pin_2, step_pin_2, dir_pin_2, LOW);
-  delay(1000); //Anti-clockwise
+   //move_motor(3200, 800, en_pin_2, step_pin_2, dir_pin_2, HIGH);
+   //delay(1000); //Clockwise
+   //move_motor(3200, 800, en_pin_2, step_pin_2, dir_pin_2, LOW);
+   //delay(1000); //Anti-clockwise
 }
