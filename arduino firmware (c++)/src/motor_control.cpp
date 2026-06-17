@@ -13,6 +13,10 @@
 //LEDs
 #define red_led 8
 #define blue_led 9
+//Joy-Stick
+#define stick_sw 10
+#define stick_x A1
+#define stick_y A2
 
 
 
@@ -36,6 +40,7 @@ void move_motor(int steps, int pulse_delay,int en_pin, int step_pin, int dir_pin
 
 // Setup code (runs once)
 void setup() {
+  pinMode(stick_sw, INPUT_PULLUP); //Joystick switch
   pinMode(step_pin_1, OUTPUT);
   pinMode(dir_pin_1, OUTPUT);
   pinMode(en_pin_1, OUTPUT);
@@ -54,6 +59,18 @@ void setup() {
 // Main script
 void loop() {
   digitalWrite(red_led, LOW); //Power indicator
+
+  //Joy-Stick Test
+  int x = analogRead(stick_x);
+  int y = analogRead(stick_y);
+  bool button = digitalRead(stick_sw);
+  Serial.print("X: ");
+  Serial.print(x);
+  Serial.print("  Y: ");
+  Serial.print(y);
+  Serial.print("  Button: ");
+  Serial.println(button);
+  delay(100);
 
   //Motor 1 Test
   move_motor(3200, 800, en_pin_1, step_pin_1, dir_pin_1, HIGH);
