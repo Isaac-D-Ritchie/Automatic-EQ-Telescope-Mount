@@ -58,12 +58,12 @@ void setup() {
   pinMode(blue_led, OUTPUT);
   pinMode(red_led, OUTPUT);
 
-  motor1.setMaxSpeed(5000);
-  motor1.setAcceleration(2000);
+  motor1.setMaxSpeed(4500);
+  motor1.setAcceleration(1000);
   enable_motor(en_pin_1);
 
-  motor2.setMaxSpeed(5000);
-  motor2.setAcceleration(2000);
+  motor2.setMaxSpeed(4500);
+  motor2.setAcceleration(1000);
   enable_motor(en_pin_2);
 
   Serial.begin(115200);
@@ -78,13 +78,13 @@ void loop() {
   bool button = digitalRead(stick_sw);
   
   int x = analogRead(stick_x);
-  x -= 524; //Resting value
+  x -= 524; //Resting value x
   if (abs(x) <50) {
     x = 0;
   }
 
   int y = analogRead(stick_y);
-  y -= 509; //Resting value
+  y -= 509; //Resting value y
   if (abs(y) <50) {
     y = 0;
   }
@@ -97,9 +97,15 @@ void loop() {
   Serial.print("  Button: ");
   Serial.println(button);
 
-  //Motor control
-  motor1.setSpeed(x * 10);
-  motor2.setSpeed(y * 10);
+  //Variable motor control
+  float variable_x = constrain(x / 500.0, -1.0, 1.0); //Convert value to between 1 and -1
+  float variable_y = constrain(y / 500.0, -1.0, 1.0);
+  float control_exponential = 2.2;
+  float control_x = (variable_x >= 0 ? 1 : -1) * pow(abs(variable_x), control_exponential);
+  float control_y = (variable_y >= 0 ? 1 : -1) * pow(abs(variable_y), control_exponential);
+
+  motor1.setSpeed(control_x * 3000);
+  motor2.setSpeed(control_y * 3000);
 
   motor1.run();
   motor2.run();
