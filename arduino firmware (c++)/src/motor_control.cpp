@@ -1,5 +1,7 @@
 #include <Arduino.h>
 #include <AccelStepper.h>
+#include <U8g2lib.h>
+#include <Wire.h>
 
 //Defining pins
 
@@ -18,6 +20,10 @@
 #define stick_sw 10
 #define stick_x A1
 #define stick_y A2
+//OLED Screen
+U8G2_SH1106_128X64_NONAME_F_HW_I2C display(U8G2_R0, U8X8_PIN_NONE);
+#define screen_SCL A4
+#define screen_SDA A5
 
 AccelStepper motor1(AccelStepper::DRIVER, step_pin_1, dir_pin_1);
 AccelStepper motor2(AccelStepper::DRIVER, step_pin_2, dir_pin_2);
@@ -57,6 +63,13 @@ void setup() {
   pinMode(en_pin_2, OUTPUT);
   pinMode(blue_led, OUTPUT);
   pinMode(red_led, OUTPUT);
+
+  display.begin();
+  display.clearBuffer();
+  display.setDisplayRotation(U8G2_R2);
+  display.setFont(u8g2_font_ncenB18_tr);
+  display.drawStr(10, 30, "ASTEPS");
+  display.sendBuffer();
 
   motor1.setMaxSpeed(4500);
   motor1.setAcceleration(1000);
