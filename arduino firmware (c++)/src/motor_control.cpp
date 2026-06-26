@@ -92,13 +92,13 @@ void loop() {
   
   int x = analogRead(stick_x);
   x -= 524; //Resting value x
-  if (abs(x) <50) {
+  if (abs(x) <25) {
     x = 0;
   }
 
   int y = analogRead(stick_y);
   y -= 509; //Resting value y
-  if (abs(y) <50) {
+  if (abs(y) <25) {
     y = 0;
   }
 
