@@ -1,10 +1,11 @@
+//Librarys
 #include <Arduino.h>
 #include <AccelStepper.h>
-#include <U8g2lib.h>
-#include <Wire.h>
+#include <U8g2lib.h> //Display library
+#include <Wire.h> //I2C Comunication library (SDA + SCL)
+
 
 //Defining pins
-
 //Motor 1
 #define step_pin_1 2
 #define dir_pin_1 3
@@ -20,41 +21,30 @@
 #define stick_sw 10
 #define stick_x A1
 #define stick_y A2
-//OLED Screen
-U8G2_SH1106_128X64_NONAME_F_HW_I2C display(U8G2_R0, U8X8_PIN_NONE);
-#define screen_SCL A4
+//128 x 64 OLED Screen (Defined as 'display')
+U8G2_SH1106_128X64_NONAME_F_HW_I2C display(U8G2_R0, U8X8_PIN_NONE); 
+#define screen_SCL A4 
 #define screen_SDA A5
-
+//Assigning AccelStepper pins for motor drivers
 AccelStepper motor1(AccelStepper::DRIVER, step_pin_1, dir_pin_1);
 AccelStepper motor2(AccelStepper::DRIVER, step_pin_2, dir_pin_2);
 
+
 //Functions
-//Custom motor control (NON AccelStepper)
-void move_motor(int steps, int pulse_delay, int step_pin, int dir_pin, bool dir) {
-    digitalWrite(dir_pin, dir); //HIGH = clockwise LOW = anti-clockwise
-
-    for (int i = 0; i < steps; i++) {
-        digitalWrite(step_pin, HIGH);
-        delayMicroseconds(pulse_delay);
-        digitalWrite(step_pin, LOW);
-        delayMicroseconds(pulse_delay);
-      }
-}
-
 void enable_motor(int en_pin) {
   digitalWrite(en_pin, LOW); //Powers TMC 2209
   digitalWrite(blue_led, LOW); //Motor LED
 }
-
 void disable_motor(int en_pin) {
   digitalWrite(en_pin, HIGH); //Cuts TMC 2209 power
   digitalWrite(blue_led, HIGH); //Cuts motor LED
 }
 
 
-// Setup code (runs once)
+// Arduino setup code
 void setup() {
-  pinMode(stick_sw, INPUT_PULLUP); //Joystick switch
+  // Pin setup
+  pinMode(stick_sw, INPUT_PULLUP);
   pinMode(step_pin_1, OUTPUT);
   pinMode(dir_pin_1, OUTPUT);
   pinMode(en_pin_1, OUTPUT);
@@ -63,19 +53,18 @@ void setup() {
   pinMode(en_pin_2, OUTPUT);
   pinMode(blue_led, OUTPUT);
   pinMode(red_led, OUTPUT);
-
+  // Display setup
   display.begin();
   display.clearBuffer();
   display.setDisplayRotation(U8G2_R2);
   display.setFont(u8g2_font_ncenB18_tr);
   display.drawStr(10, 30, "ASTEPS");
   display.sendBuffer();
-
-  motor1.setMaxSpeed(4500);
+  //Motor setup
+  motor1.setMaxSpeed(4500); //Motor 1
   motor1.setAcceleration(1000);
   enable_motor(en_pin_1);
-
-  motor2.setMaxSpeed(4500);
+  motor2.setMaxSpeed(4500); //Motor 2
   motor2.setAcceleration(1000);
   enable_motor(en_pin_2);
 
@@ -86,22 +75,18 @@ void setup() {
 // Main script
 void loop() {
   digitalWrite(red_led, LOW); //Power indicator
-
   //Joystick controls
   bool button = digitalRead(stick_sw);
-  
   int x = analogRead(stick_x);
-  x -= 524; //Resting value x
+  x -= 524; //Resting value adjustment x
   if (abs(x) <25) {
     x = 0;
   }
-
   int y = analogRead(stick_y);
-  y -= 509; //Resting value y
+  y -= 509; //Resting value adjustment y
   if (abs(y) <25) {
     y = 0;
   }
-
   //Prints joystick reading to serial output
   Serial.print("X: ");
   Serial.print(x);
@@ -109,17 +94,14 @@ void loop() {
   Serial.print(y);
   Serial.print("  Button: ");
   Serial.println(button);
-
-  //Variable motor control
+  //Variable motor control from joystick
   float variable_x = constrain(x / 500.0, -1.0, 1.0); //Convert value to between 1 and -1
   float variable_y = constrain(y / 500.0, -1.0, 1.0);
-  float control_exponential = 2.2;
+  float control_exponential = 2.2; //Joystick response curve and calculation
   float control_x = (variable_x >= 0 ? 1 : -1) * pow(abs(variable_x), control_exponential);
   float control_y = (variable_y >= 0 ? 1 : -1) * pow(abs(variable_y), control_exponential);
-
-  motor1.setSpeed(control_x * 3000);
+  motor1.setSpeed(control_x * 3000); //Motor speed
   motor2.setSpeed(control_y * 3000);
-
-  motor1.run();
-  motor2.run();
+  motor1.runSpeed();
+  motor2.runSpeed();
 }
