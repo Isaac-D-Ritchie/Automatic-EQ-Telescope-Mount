@@ -26,42 +26,9 @@
 //Hardware Objects
 //128 x 64 OLED Screen (Defined as 'display')
 U8G2_SH1106_128X64_NONAME_F_HW_I2C display(U8G2_R0, U8X8_PIN_NONE); 
-#define screen_SCL A4 
-#define screen_SDA A5
 //Assigning AccelStepper pins for motor drivers
 AccelStepper motor1(AccelStepper::DRIVER, step_pin_1, dir_pin_1);
 AccelStepper motor2(AccelStepper::DRIVER, step_pin_2, dir_pin_2);
-
-
-//Functions
-//Motor power control functions
-void enable_motor(int en_pin) {
-  digitalWrite(en_pin, LOW); //Powers TMC 2209
-  digitalWrite(blue_led, LOW); //Motor LED
-}
-void disable_motor(int en_pin) {
-  digitalWrite(en_pin, HIGH); //Cuts TMC 2209 power
-  digitalWrite(blue_led, HIGH); //Cuts motor LED
-}
-//Display Screen function
-void draw_logo() { //Logo Screen
-  display.clearBuffer();
-  display.setFont(u8g2_font_ncenB18_tr);
-  display.drawStr(10, 30, "ASTEPS");
-  display.sendBuffer();
-}
-void draw_menu() { //Manual control screen
- //Plans to make menu selection                         <----------------------------
-}
-void draw_manual() { //Manual control screen
- //Plans to make joystick tracking and current position <-----------------------------
-}
-void draw_track() { //Manual control screen
- //Plans to make integration with python for object search / Go-To  <-----------------
-}
-void draw_settings() { //Manual control screen
- //Plans to make settings options with info about device <----------------------------
-}
 
 
 //Enums
@@ -83,6 +50,47 @@ enum telescope_status {
   Error
 };
 telescope_status current_telescope_status =  Idle;
+
+
+//Functions
+//Motor power control functions
+void enable_motor(int en_pin) {
+  digitalWrite(en_pin, LOW); //Powers TMC 2209
+  digitalWrite(blue_led, LOW); //Motor LED
+}
+void disable_motor(int en_pin) {
+  digitalWrite(en_pin, HIGH); //Cuts TMC 2209 power
+  digitalWrite(blue_led, HIGH); //Cuts motor LED
+}
+//Display Screen function
+void draw_logo() { //Logo Screen
+  display.clearBuffer();
+  display.setFont(u8g2_font_ncenB18_tr);
+  display.drawStr(10, 30, "ASTEPS");
+  display.setFont(u8g2_font_6x10_tr);
+  display.drawStr(20, 50, "Press Joystick");
+  display.drawStr(28, 60, "to continue");
+  display.sendBuffer();
+
+  if (digitalRead(stick_sw) == LOW) { //Joystick switch detection
+    current_display_status = Menu;
+  }
+}
+void draw_menu() { //Manual control screen
+  display.clearBuffer();
+  display.setFont(u8g2_font_ncenB18_tr);
+  display.drawStr(10, 30, "Menu");
+  display.sendBuffer();
+}
+void draw_manual() { //Manual control screen
+ //Plans to make joystick tracking and current position <-----------------------------
+}
+void draw_track() { //Manual control screen
+ //Plans to make integration with python for object search / Go-To  <-----------------
+}
+void draw_settings() { //Manual control screen
+ //Plans to make settings options with info about device <----------------------------
+}
 
 
 // Arduino setup code
@@ -134,6 +142,7 @@ void loop() {
   Serial.print(y);
   Serial.print("  Button: ");
   Serial.println(button);
+
 
   //Switch cases for display
   switch (current_display_status)
