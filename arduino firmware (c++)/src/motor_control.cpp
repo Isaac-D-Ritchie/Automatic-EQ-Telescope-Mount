@@ -43,17 +43,37 @@ void disable_motor(int en_pin) {
   digitalWrite(en_pin, HIGH); //Cuts TMC 2209 power
   digitalWrite(blue_led, HIGH); //Cuts motor LED
 }
+//Display Screen function
+void draw_logo() { //Logo Screen
+  display.clearBuffer();
+  display.setFont(u8g2_font_ncenB18_tr);
+  display.drawStr(10, 30, "ASTEPS");
+  display.sendBuffer();
+}
+void draw_menu() { //Manual control screen
+ //Plans to make menu selection                         <----------------------------
+}
+void draw_manual() { //Manual control screen
+ //Plans to make joystick tracking and current position <-----------------------------
+}
+void draw_track() { //Manual control screen
+ //Plans to make integration with python for object search / Go-To  <-----------------
+}
+void draw_settings() { //Manual control screen
+ //Plans to make settings options with info about device <----------------------------
+}
 
 
 //Enums
 //Display state options
 enum screen_state {
   Logo,
+  Menu,
   Manual,
   Track,
   Settings
 };
-screen_state current_status = Logo; //Sets starting screen to Logo
+screen_state current_display_status = Logo; //Sets starting screen to Logo
 //Telescope status for device monitoring
 enum telescope_status {
   Idle,
@@ -62,7 +82,7 @@ enum telescope_status {
   Manual_Movement,
   Error
 };
-telescope_status current_status =  Idle;
+telescope_status current_telescope_status =  Idle;
 
 
 // Arduino setup code
@@ -79,11 +99,7 @@ void setup() {
   pinMode(red_led, OUTPUT);
   // Display setup
   display.begin();
-  display.clearBuffer();
-  display.setDisplayRotation(U8G2_R2);
-  display.setFont(u8g2_font_ncenB18_tr);
-  display.drawStr(10, 30, "ASTEPS");
-  display.sendBuffer();
+  display.setDisplayRotation(U8G2_R2); //Flips display orientation
   //Motor setup
   motor1.setMaxSpeed(4500); //Motor 1 max speed
   motor1.setAcceleration(1000);
@@ -118,6 +134,34 @@ void loop() {
   Serial.print(y);
   Serial.print("  Button: ");
   Serial.println(button);
+
+  //Switch cases for display
+  switch (current_display_status)
+  {
+    case Logo:
+      draw_logo();
+      break;
+
+    case Menu:
+      draw_menu();
+      break;
+
+    case Manual:
+      draw_manual();
+      break;
+
+    case Track:
+      draw_track();
+      break;
+
+    case Settings:
+      draw_settings();
+      break;
+
+    default:
+      break;
+  }
+
   //Variable motor control from joystick
   float variable_x = constrain(x / 500.0, -1.0, 1.0); //Convert value to between 1 and -1
   float variable_y = constrain(y / 500.0, -1.0, 1.0);
