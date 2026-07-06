@@ -1,6 +1,6 @@
 //Librarys
 #include <Arduino.h>
-#include <AccelStepper.h>
+#include <AccelStepper.h> //Motor step pulse control
 #include <U8g2lib.h> //Display library
 #include <Wire.h> //I2C Comunication library (SDA + SCL)
 
@@ -50,6 +50,13 @@ enum telescope_status {
   Error
 };
 telescope_status current_telescope_status =  Idle;
+//Menu Options
+enum menu_items {
+  menu_manual,
+  menu_track,
+  menu_settings
+};
+menu_items selected_item = menu_manual;
 
 
 //Functions
@@ -76,7 +83,7 @@ void draw_logo() { //Logo Screen
     current_display_status = Menu;
   }
 }
-void draw_menu() { //Manual control screen
+void draw_menu() { //Menu control screen
   display.clearBuffer();
   display.setFont(u8g2_font_ncenB18_tr);
   display.drawStr(10, 30, "Menu");
@@ -85,10 +92,10 @@ void draw_menu() { //Manual control screen
 void draw_manual() { //Manual control screen
  //Plans to make joystick tracking and current position <-----------------------------
 }
-void draw_track() { //Manual control screen
+void draw_track() { //Track control screen
  //Plans to make integration with python for object search / Go-To  <-----------------
 }
-void draw_settings() { //Manual control screen
+void draw_settings() { //Settings control screen
  //Plans to make settings options with info about device <----------------------------
 }
 
