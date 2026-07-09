@@ -132,8 +132,28 @@ void option_selection() {
     joystick_stop = false;
   }
 }
+//Manual Motor control functions
+void manual_motor_control() {
+  Serial.println("Manual motor control active"); //Serial manual mode detection
+  float variable_x = constrain(joystick_x / 500.0, -1.0, 1.0); //Convert value to between 1 and -1
+  float variable_y = constrain(joystick_y / 500.0, -1.0, 1.0);
+  float control_expo = 2.2; //Joystick response curve and calculation
+  float control_x = (variable_x >= 0 ? 1 : -1) * pow(abs(variable_x), control_expo);
+  float control_y = (variable_y >= 0 ? 1 : -1) * pow(abs(variable_y), control_expo);
+  motor1.setSpeed(control_x * 8000); //Motor manual speed control
+  motor2.setSpeed(control_y * 8000);
+  motor1.runSpeed();
+  motor2.runSpeed();
+}
+//Motor power control
+void stop_manual_control() {
+  motor1.setSpeed(0);
+  motor2.setSpeed(0);
+  disable_motor(en_pin_1);
+  disable_motor(en_pin_2);
+}
 
-//Display Screen function
+//Display Screen functions
 void draw_logo() { //Logo Screen
   {
     display.firstPage();
@@ -174,7 +194,6 @@ void draw_menu() { //Menu control screen
 
   } while (display.nextPage());
 }
-
 void draw_manual() { //Manual control screen
   {
     display.firstPage();
@@ -190,6 +209,7 @@ void draw_manual() { //Manual control screen
     while (display.nextPage());
     {
     if (joystick_btn_pressed) { //Joystick switch detection
+    stop_manual_control();
     current_display_status = Menu; }
     }
   }
@@ -218,12 +238,12 @@ void setup() {
   display.begin();
   display.setDisplayRotation(U8G2_R2); //Flips display orientation
   //Motor setup
-  motor1.setMaxSpeed(4500); //Motor 1 max speed
+  motor1.setMaxSpeed(8000); //Motor 1 max speed
   motor1.setAcceleration(1000);
-  enable_motor(en_pin_1);
-  motor2.setMaxSpeed(4500); //Motor 2 max speed
+  motor2.setMaxSpeed(8000); //Motor 2 max speed
   motor2.setAcceleration(1000);
-  enable_motor(en_pin_2);
+  disable_motor(en_pin_1); //Disables motor power on start
+  disable_motor(en_pin_2);
 
   Serial.begin(115200);
 }
@@ -257,6 +277,8 @@ void loop() {
       switch (selected_menu_item)
       {
       case select_manual:
+        enable_motor(en_pin_1); //Enables motor power
+        enable_motor(en_pin_2);
         current_display_status = Manual;
         break;
     
@@ -276,6 +298,8 @@ void loop() {
 
     case Manual:
       draw_manual();
+      manual_motor_control();
+      current_telescope_status = Manual_Movement;
       break;
 
     case Track:
@@ -289,15 +313,4 @@ void loop() {
     default:
       break;
   }
-
-  //Variable motor control from joystick
-  float variable_x = constrain(joystick_x / 500.0, -1.0, 1.0); //Convert value to between 1 and -1
-  float variable_y = constrain(joystick_y / 500.0, -1.0, 1.0);
-  float control_expo = 2.2; //Joystick response curve and calculation
-  float control_x = (variable_x >= 0 ? 1 : -1) * pow(abs(variable_x), control_expo);
-  float control_y = (variable_y >= 0 ? 1 : -1) * pow(abs(variable_y), control_expo);
-  motor1.setSpeed(control_x * 3000); //Motor manual speed control
-  motor2.setSpeed(control_y * 3000);
-  motor1.runSpeed();
-  motor2.runSpeed();
 }
