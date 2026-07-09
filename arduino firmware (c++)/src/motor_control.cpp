@@ -61,7 +61,9 @@ menu_items selected_menu_item = select_manual;
 int joystick_x = 0;
 int joystick_y = 0;
 bool joystick_btn = HIGH;
-bool joystick_stop = false; //Stops endless scrolling in menu
+bool joystick_stop = false; //To stop menu over scrolling
+bool last_joystick_state = HIGH; //To stop button spamming
+bool joystick_btn_pressed = false; //Joystick button press detection
 
 
 //Functions
@@ -87,6 +89,8 @@ void update_joystick() {
   if (abs(joystick_y) <25) {
     joystick_y = 0;
   }
+  joystick_btn_pressed = (last_joystick_state == HIGH && joystick_btn == LOW);
+  last_joystick_state = joystick_btn;
 }
 //Joystick Option Selection function 
 void option_selection() {
@@ -128,6 +132,7 @@ void option_selection() {
     joystick_stop = false;
   }
 }
+
 //Display Screen function
 void draw_logo() { //Logo Screen
   {
@@ -142,7 +147,7 @@ void draw_logo() { //Logo Screen
     }
     while (display.nextPage());
     {
-    if (digitalRead(stick_sw) == LOW) { //Joystick switch detection
+    if (joystick_btn_pressed) { //Joystick switch detection
     current_display_status = Menu; }
     }
   }
@@ -171,7 +176,23 @@ void draw_menu() { //Menu control screen
 }
 
 void draw_manual() { //Manual control screen
- //Plans to make joystick tracking and current position <-----------------------------
+  {
+    display.firstPage();
+    do
+    {
+      display.setFont(u8g2_font_7x13_tr);
+      display.drawStr(20, 15, "Manual Control");
+      display.setFont(u8g2_font_6x10_tr);
+      display.drawStr(20, 30, "Current position");
+      display.drawStr(20, 45, "RA = ____");
+      display.drawStr(20, 60, "DEC = ___");
+    }
+    while (display.nextPage());
+    {
+    if (joystick_btn_pressed) { //Joystick switch detection
+    current_display_status = Menu; }
+    }
+  }
 }
 void draw_track() { //Track control screen
  //Plans to make integration with python for object search / Go-To  <-----------------
@@ -230,9 +251,28 @@ void loop() {
       break;
 
     case Menu:
-      option_selection();
+    option_selection();
+
+    if (joystick_btn_pressed) {
+      switch (selected_menu_item)
+      {
+      case select_manual:
+        current_display_status = Manual;
+        break;
+    
+      case select_track:
+        current_display_status = Track;
+        break;
+
+      case select_settings:
+        current_display_status = Settings;
+        break;
+      }
+    }
+    if (current_display_status == Menu) {
       draw_menu();
-      break;
+    }
+    break;
 
     case Manual:
       draw_manual();
