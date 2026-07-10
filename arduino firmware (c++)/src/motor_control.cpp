@@ -31,7 +31,7 @@ AccelStepper motor1(AccelStepper::DRIVER, step_pin_1, dir_pin_1);
 AccelStepper motor2(AccelStepper::DRIVER, step_pin_2, dir_pin_2);
 
 
-//Enums and variables
+//Enums
 //Display state options
 enum screen_state {
   Logo,
@@ -57,6 +57,8 @@ enum menu_items {
   select_settings
 };
 menu_items selected_menu_item = select_manual;
+
+
 //Global variables
 //Joystick variables
 int joystick_x = 0;
@@ -71,7 +73,7 @@ const unsigned long display_refresh = 250; //Screen refresh rate (ms)
 bool display_needs_updating = true; //For only refreshing screen when needed
 
 
-//Functions
+//Non display functions
 //Motor power control functions
 void enable_motor(int en_pin) {
   digitalWrite(en_pin, LOW); //Powers TMC 2209
@@ -141,7 +143,7 @@ void option_selection() {
     joystick_stop = false;
   }
 }
-//Manual Motor control functions
+//Manual Motor control function
 void manual_motor_control() {
   float variable_x = constrain(joystick_x / 500.0, -1.0, 1.0); //Convert value to between 1 and -1
   float variable_y = constrain(joystick_y / 500.0, -1.0, 1.0);
@@ -159,8 +161,10 @@ void stop_manual_control() {
   disable_motor(en_pin_2);
 }
 
-//Display Screen functions
-void draw_logo() { //Logo Screen
+
+//Display page functions
+//Logo Screen
+void draw_logo() {
     if (!display_needs_updating) {
       return;
     }
@@ -177,7 +181,8 @@ void draw_logo() { //Logo Screen
     }
     while (display.nextPage());
 }
-void draw_menu() { //Menu control screen
+//Menu control screen
+void draw_menu() {
   if (!display_needs_updating) {
     return;
   }
@@ -202,7 +207,8 @@ void draw_menu() { //Menu control screen
 
   } while (display.nextPage());
 }
-void draw_manual() { //Manual control screen
+//Manual control screen
+void draw_manual() {
     if (!display_needs_updating) {
       return;
     }
@@ -219,15 +225,17 @@ void draw_manual() { //Manual control screen
     }
     while (display.nextPage());
 }
-void draw_track() { //Track control screen
+//Track control screen
+void draw_track() {
  //Plans to make integration with python for object search / Go-To  <-----------------
 }
-void draw_settings() { //Settings control screen
+//Settings control screen
+void draw_settings() {
  //Plans to make settings options with info about device <----------------------------
 }
 
 
-// Arduino setup code
+// Arduino setup
 void setup() {
   // Pin setup
   pinMode(stick_sw, INPUT_PULLUP);
@@ -255,7 +263,7 @@ void setup() {
 }
 
 
-// Main script
+//Arduino main loop
 void loop() {
   motor1.runSpeed(); //Sends motor steps every loop
   motor2.runSpeed();
