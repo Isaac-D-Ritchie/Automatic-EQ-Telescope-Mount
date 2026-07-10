@@ -57,13 +57,18 @@ enum menu_items {
   select_settings
 };
 menu_items selected_menu_item = select_manual;
-//Joystick variables - global
+//Global variables
+//Joystick variables
 int joystick_x = 0;
 int joystick_y = 0;
 bool joystick_btn = HIGH;
 bool joystick_stop = false; //To stop menu over scrolling
 bool last_joystick_state = HIGH; //To stop button spamming
 bool joystick_btn_pressed = false; //Joystick button press detection
+//Screen refresh limiter
+unsigned long last_display_refresh = 0;
+const unsigned long display_refresh = 250; //Screen refresh rate (ms)
+bool display_needs_updating = true; //For only refreshing screen when needed
 
 
 //Functions
@@ -101,10 +106,12 @@ void option_selection() {
       {
       case select_settings:
         selected_menu_item = select_track;
+        display_needs_updating = true;
         break;
     
       case select_track:
         selected_menu_item = select_manual;
+        display_needs_updating = true;
         break;
     
       case select_manual:
@@ -117,10 +124,12 @@ void option_selection() {
       {
       case select_manual:
         selected_menu_item = select_track;
+        display_needs_updating = true;
         break;
     
       case select_track:
         selected_menu_item = select_settings;
+        display_needs_updating = true;
         break;
 
       case select_settings:
@@ -134,16 +143,13 @@ void option_selection() {
 }
 //Manual Motor control functions
 void manual_motor_control() {
-  Serial.println("Manual motor control active"); //Serial manual mode detection
   float variable_x = constrain(joystick_x / 500.0, -1.0, 1.0); //Convert value to between 1 and -1
   float variable_y = constrain(joystick_y / 500.0, -1.0, 1.0);
   float control_expo = 2.2; //Joystick response curve and calculation
   float control_x = (variable_x >= 0 ? 1 : -1) * pow(abs(variable_x), control_expo);
   float control_y = (variable_y >= 0 ? 1 : -1) * pow(abs(variable_y), control_expo);
-  motor1.setSpeed(control_x * 8000); //Motor manual speed control
-  motor2.setSpeed(control_y * 8000);
-  motor1.runSpeed();
-  motor2.runSpeed();
+  motor1.setSpeed(control_x * 500); //Motor manual speed control
+  motor2.setSpeed(control_y * 500);
 }
 //Motor power control
 void stop_manual_control() {
@@ -155,7 +161,11 @@ void stop_manual_control() {
 
 //Display Screen functions
 void draw_logo() { //Logo Screen
-  {
+    if (!display_needs_updating) {
+      return;
+    }
+
+    display_needs_updating = false;
     display.firstPage();
     do
     {
@@ -166,14 +176,12 @@ void draw_logo() { //Logo Screen
       display.drawStr(28, 60, "to continue");
     }
     while (display.nextPage());
-    {
-    if (joystick_btn_pressed) { //Joystick switch detection
-    current_display_status = Menu; }
-    }
-  }
 }
 void draw_menu() { //Menu control screen
-
+  if (!display_needs_updating) {
+    return;
+  }
+  display_needs_updating = false;
   display.firstPage();
   do
   {
@@ -195,7 +203,10 @@ void draw_menu() { //Menu control screen
   } while (display.nextPage());
 }
 void draw_manual() { //Manual control screen
-  {
+    if (!display_needs_updating) {
+      return;
+    }
+    display_needs_updating = false;
     display.firstPage();
     do
     {
@@ -207,12 +218,6 @@ void draw_manual() { //Manual control screen
       display.drawStr(20, 60, "DEC = ___");
     }
     while (display.nextPage());
-    {
-    if (joystick_btn_pressed) { //Joystick switch detection
-    stop_manual_control();
-    current_display_status = Menu; }
-    }
-  }
 }
 void draw_track() { //Track control screen
  //Plans to make integration with python for object search / Go-To  <-----------------
@@ -236,11 +241,12 @@ void setup() {
   pinMode(red_led, OUTPUT);
   // Display setup
   display.begin();
+  Wire.setClock(400000); //Increases screen I2C speed
   display.setDisplayRotation(U8G2_R2); //Flips display orientation
   //Motor setup
-  motor1.setMaxSpeed(8000); //Motor 1 max speed
+  motor1.setMaxSpeed(500); //Motor 1 max speed
   motor1.setAcceleration(1000);
-  motor2.setMaxSpeed(8000); //Motor 2 max speed
+  motor2.setMaxSpeed(500); //Motor 2 max speed
   motor2.setAcceleration(1000);
   disable_motor(en_pin_1); //Disables motor power on start
   disable_motor(en_pin_2);
@@ -251,22 +257,29 @@ void setup() {
 
 // Main script
 void loop() {
+  motor1.runSpeed(); //Sends motor steps every loop
+  motor2.runSpeed();
   digitalWrite(red_led, LOW); //Power indicator
   update_joystick(); //Updates joystick position
 
-  //Prints joystick reading to serial output
-  Serial.print("X: ");
-  Serial.print(joystick_x);
-  Serial.print("  Y: ");
-  Serial.print(joystick_y);
-  Serial.print("  Button: ");
-  Serial.println(joystick_btn);
+  //Prints joystick reading to serial output - For debugging
+  //Serial.print("X: ");
+  //Serial.print(joystick_x);
+  //Serial.print("  Y: ");
+  //Serial.print(joystick_y);
+  //Serial.print("  Button: ");
+  //Serial.println(joystick_btn);
 
 
   //Switch cases for display
   switch (current_display_status)
   {
     case Logo:
+      if (joystick_btn_pressed) { //Joystick switch detection
+        current_display_status = Menu; 
+        display_needs_updating = true;
+        return;
+      }
       draw_logo();
       break;
 
@@ -280,14 +293,17 @@ void loop() {
         enable_motor(en_pin_1); //Enables motor power
         enable_motor(en_pin_2);
         current_display_status = Manual;
+        display_needs_updating = true;
         break;
     
       case select_track:
         current_display_status = Track;
+        display_needs_updating = true;
         break;
 
       case select_settings:
         current_display_status = Settings;
+        display_needs_updating = true;
         break;
       }
     }
@@ -297,8 +313,20 @@ void loop() {
     break;
 
     case Manual:
-      draw_manual();
       manual_motor_control();
+      if (joystick_btn_pressed) { //Joystick switch detection
+        stop_manual_control();
+        current_display_status = Menu;
+        display_needs_updating = true;
+        return;
+      }
+      if (joystick_x == 0 && joystick_y == 0) { //Only update display when motor is not moving
+        if (millis() - last_display_refresh >= display_refresh) {
+          display_needs_updating = true;
+          draw_manual();
+          last_display_refresh = millis();
+        }
+      }
       current_telescope_status = Manual_Movement;
       break;
 
