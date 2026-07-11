@@ -225,13 +225,41 @@ void draw_manual() {
     }
     while (display.nextPage());
 }
-//Track control screen
-void draw_track() {
- //Plans to make integration with python for object search / Go-To  <-----------------
+//Track control screen <--- Plans to make integration with python for object search / Go-To
+void draw_track() { 
+    if (!display_needs_updating) {
+      return;
+    }
+    display_needs_updating = false;
+    display.firstPage();
+    do
+    {
+      display.setFont(u8g2_font_7x13_tr);
+      display.drawStr(20, 15, "Tracking");
+      display.setFont(u8g2_font_6x10_tr);
+      display.drawStr(20, 30, "Target Position");
+      display.drawStr(20, 45, "RA = ____");
+      display.drawStr(20, 60, "DEC = ___");
+    }
+    while (display.nextPage());
 }
 //Settings control screen
 void draw_settings() {
- //Plans to make settings options with info about device <----------------------------
+    if (!display_needs_updating) {
+      return;
+    }
+    display_needs_updating = false;
+    display.firstPage();
+    do
+    {
+      display.setFont(u8g2_font_7x13_tr);
+      display.drawStr(20, 15, "Settings");
+      display.setFont(u8g2_font_6x10_tr);
+      display.drawStr(20, 30, "Calibrate"); // <------------ Menu integration?
+      display.drawStr(20, 45, "______");
+      display.drawStr(20, 60, "______");
+    }
+    while (display.nextPage());
 }
 
 
@@ -339,14 +367,21 @@ void loop() {
       break;
 
     case Track:
+      if (joystick_btn_pressed) {
+        current_display_status = Menu; 
+        display_needs_updating = true;
+        return;
+      }
       draw_track();
       break;
 
     case Settings:
+      if (joystick_btn_pressed) {
+        current_display_status = Menu; 
+        display_needs_updating = true;
+        return;
+      }
       draw_settings();
-      break;
-
-    default:
       break;
   }
 }
