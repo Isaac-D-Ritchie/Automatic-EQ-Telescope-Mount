@@ -237,9 +237,9 @@ void draw_track() {
       display.setFont(u8g2_font_7x13_tr);
       display.drawStr(20, 15, "Tracking");
       display.setFont(u8g2_font_6x10_tr);
-      display.drawStr(20, 30, "Target Position");
-      display.drawStr(20, 45, "RA = ____");
-      display.drawStr(20, 60, "DEC = ___");
+      display.drawStr(20, 30, "Waiting for data...");
+      display.drawStr(20, 45, "Traget RA = ____");
+      display.drawStr(20, 60, "Target DEC = ___");
     }
     while (display.nextPage());
 }
@@ -256,8 +256,6 @@ void draw_settings() {
       display.drawStr(20, 15, "Settings");
       display.setFont(u8g2_font_6x10_tr);
       display.drawStr(20, 30, "Calibrate"); // <------------ Menu integration?
-      display.drawStr(20, 45, "______");
-      display.drawStr(20, 60, "______");
     }
     while (display.nextPage());
 }
