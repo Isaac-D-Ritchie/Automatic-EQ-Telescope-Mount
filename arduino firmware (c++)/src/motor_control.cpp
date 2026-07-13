@@ -37,6 +37,7 @@ enum screen_state {
   Logo,
   Menu,
   Manual,
+  Polaris_sync,
   Track,
   Settings
 };
@@ -53,6 +54,7 @@ telescope_status current_telescope_status =  Idle;
 //Menu Options
 enum menu_items {
   select_manual,
+  select_polaris_sync,
   select_track,
   select_settings
 };
@@ -112,6 +114,11 @@ void option_selection() {
         break;
     
       case select_track:
+        selected_menu_item = select_polaris_sync;
+        display_needs_updating = true;
+        break;
+
+      case select_polaris_sync:
         selected_menu_item = select_manual;
         display_needs_updating = true;
         break;
@@ -125,6 +132,11 @@ void option_selection() {
       switch (selected_menu_item)
       {
       case select_manual:
+        selected_menu_item = select_polaris_sync;
+        display_needs_updating = true;
+        break;
+
+      case select_polaris_sync:
         selected_menu_item = select_track;
         display_needs_updating = true;
         break;
@@ -191,19 +203,23 @@ void draw_menu() {
   do
   {
     display.setFont(u8g2_font_6x10_tr);
-    display.drawStr(50, 10, "Menu");
+    display.drawStr(50, 8, "Menu");
 
     if (selected_menu_item == select_manual)
-      display.drawStr(0,25,"> Manual <");
-    else display.drawStr(0,25,"  Manual");
+      display.drawStr(0,20,"> Manual <");
+    else display.drawStr(0,20,"  Manual");
+
+    if (selected_menu_item == select_polaris_sync)
+      display.drawStr(0,34,"> Polaris Sync <");
+    else display.drawStr(0,34,"  Polaris Sync");
 
     if (selected_menu_item == select_track)
-      display.drawStr(0,40,"> Tracking <");
-    else display.drawStr(0,40,"  Tracking");
+      display.drawStr(0,48,"> Tracking <");
+    else display.drawStr(0,48,"  Tracking");
 
     if (selected_menu_item == select_settings) 
-      display.drawStr(0,55,"> Settings <");
-    else display.drawStr(0,55,"  Settings");
+      display.drawStr(0,62,"> Settings <");
+    else display.drawStr(0,62,"  Settings");
 
   } while (display.nextPage());
 }
@@ -218,6 +234,24 @@ void draw_manual() {
     {
       display.setFont(u8g2_font_7x13_tr);
       display.drawStr(20, 15, "Manual Control");
+      display.setFont(u8g2_font_6x10_tr);
+      display.drawStr(20, 30, "Current position");
+      display.drawStr(20, 45, "RA = ____");
+      display.drawStr(20, 60, "DEC = ___");
+    }
+    while (display.nextPage());
+}
+//Sync telescope co-ordinates to polaris
+void draw_polaris_sync() {
+    if (!display_needs_updating) {
+      return;
+    }
+    display_needs_updating = false;
+    display.firstPage();
+    do
+    {
+      display.setFont(u8g2_font_7x13_tr);
+      display.drawStr(20, 15, "Polaris Sync");
       display.setFont(u8g2_font_6x10_tr);
       display.drawStr(20, 30, "Current position");
       display.drawStr(20, 45, "RA = ____");
@@ -327,6 +361,11 @@ void loop() {
         enable_motor(en_pin_1); //Enables motor power
         enable_motor(en_pin_2);
         current_display_status = Manual;
+        display_needs_updating = true;
+        break;
+
+      case select_polaris_sync:
+        current_display_status = Polaris_sync;
         display_needs_updating = true;
         break;
     
