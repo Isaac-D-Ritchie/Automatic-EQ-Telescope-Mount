@@ -282,8 +282,15 @@ void draw_manual() {
       display.drawStr(20, 15, "Manual Control");
       display.setFont(u8g2_font_6x10_tr);
       display.drawStr(20, 30, "Current position");
-      display.drawStr(20, 45, "RA = ____");
-      display.drawStr(20, 60, "DEC = ___");
+      char buffer[20];
+      char ra_buffer[10];
+      char dec_buffer[10];
+      dtostrf(current_ra, 6, 2, ra_buffer);
+      dtostrf(current_dec, 6, 2, dec_buffer);
+      sprintf(buffer, "RA = %s", ra_buffer);
+      display.drawStr(20,45,buffer);
+      sprintf(buffer, "DEC=%s", dec_buffer);
+      display.drawStr(20,60,buffer);
     }
     while (display.nextPage());
 }
@@ -459,6 +466,7 @@ void loop() {
 
     case Manual:
       manual_motor_control();
+      update_coordinates();
       if (joystick_btn_pressed) { //Joystick switch detection
         stop_manual_control();
         current_display_status = Menu;
