@@ -479,9 +479,6 @@ void loop() {
         display_needs_updating = true;
         return;
       }
-      if (telescope_calibrated) {
-        return;
-      }
       draw_polaris_sync();
       break;
 
