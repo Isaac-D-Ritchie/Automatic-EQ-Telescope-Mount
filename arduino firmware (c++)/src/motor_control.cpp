@@ -210,7 +210,15 @@ void stop_manual_control() {
   disable_motor(en_pin_1);
   disable_motor(en_pin_2);
 }
-
+//Motor coordinate updater
+void update_coordinates() {
+  long current_ra_steps = motor1.currentPosition();
+  long current_dec_steps = motor2.currentPosition();
+  long ra_difference = current_ra_steps - polaris_ra_steps;
+  long dec_difference = current_dec_steps - polaris_dec_steps;
+  current_ra = polaris_ra + (ra_difference / steps_per_degree_ra);
+  current_dec = polaris_dec + (dec_difference / steps_per_degree_dec);
+}
 
 //Display page functions
 //Logo Screen
@@ -279,7 +287,7 @@ void draw_manual() {
     }
     while (display.nextPage());
 }
-//Sync telescope co-ordinates to polaris
+//Sync telescope coordinates to polaris
 void draw_polaris_sync() {
     if (!display_needs_updating) {
       return;
