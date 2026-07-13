@@ -38,6 +38,7 @@ enum screen_state {
   Menu,
   Manual,
   Polaris_sync,
+  Success_screen,
   Track,
   Settings
 };
@@ -62,6 +63,16 @@ menu_items selected_menu_item = select_manual;
 
 
 //Global variables
+//Telescope calibration
+bool telescope_calibrated = false;
+long polaris_ra_steps = 0; //To store telescope position in motor steps
+long polaris_dec_steps = 0;
+const float polaris_ra = 37.95456; //Polaris location for calibration reference
+const float polaris_dec = 89.26411;
+float current_ra = 0; //For tracking position
+float current_dec = 0;
+float steps_per_degree_ra = 10; //Test values <--------------------------- To be calculated
+float steps_per_degree_dec = 10;
 //Joystick variables
 int joystick_x = 0;
 int joystick_y = 0;
@@ -69,10 +80,16 @@ bool joystick_btn = HIGH;
 bool joystick_stop = false; //To stop menu over scrolling
 bool last_joystick_state = HIGH; //To stop button spamming
 bool joystick_btn_pressed = false; //Joystick button press detection
+unsigned long first_press_time = 0; //Joystick double press detection
+const unsigned long double_press_time = 500; //Double detection time frame ms
+bool double_press = false; //Double press event triggers
+bool second_press_waiting = false;
 //Screen refresh limiter
 unsigned long last_display_refresh = 0;
 const unsigned long display_refresh = 250; //Screen refresh rate (ms)
 bool display_needs_updating = true; //For only refreshing screen when needed
+unsigned long success_time = 0; //Timer for success screen
+const unsigned long success_delay = 4000; //ms
 
 
 //Non display functions
@@ -101,6 +118,27 @@ void update_joystick() {
   joystick_btn_pressed = (last_joystick_state == HIGH && joystick_btn == LOW);
   last_joystick_state = joystick_btn;
 }
+//Function for joystick double press
+void update_double_press() {
+  double_press = false;
+  if (!joystick_btn_pressed) {
+    return;
+  }
+  if (!second_press_waiting) {
+    second_press_waiting = true;
+    first_press_time = millis();
+  }
+  else {
+    if (millis() - first_press_time <= double_press_time) {
+      double_press = true;
+    }
+    second_press_waiting = false;
+  }
+  if (second_press_waiting && millis() - first_press_time > double_press_time) {
+    second_press_waiting = false;
+  }
+}
+
 //Joystick Option Selection function 
 void option_selection() {
   if (!joystick_stop) {
@@ -251,11 +289,36 @@ void draw_polaris_sync() {
     do
     {
       display.setFont(u8g2_font_7x13_tr);
-      display.drawStr(20, 15, "Polaris Sync");
+      display.drawStr(5, 10, "Polaris Alignment");
       display.setFont(u8g2_font_6x10_tr);
-      display.drawStr(20, 30, "Current position");
-      display.drawStr(20, 45, "RA = ____");
-      display.drawStr(20, 60, "DEC = ___");
+      display.drawStr(0, 28, "1. Point to polaris");
+      display.drawStr(0, 42, "2. Double press stick");
+      display.drawStr(18, 52, "to calibrate");
+    }
+    while (display.nextPage());
+}
+//Success screen
+void draw_success_screen(const char* title, const char* message, float ra, float dec) {
+    if (!display_needs_updating) {
+      return;
+    }
+    display_needs_updating = false;
+    display.firstPage();
+    do
+    {
+      display.setFont(u8g2_font_7x13B_tr);
+      display.drawStr(0, 15, title);
+      display.setFont(u8g2_font_7x13_tr);
+      display.drawStr(0, 30, message);
+      char buffer[16];
+      char ra_buffer[10];
+      char dec_buffer[10];
+      dtostrf(ra, 6, 2, ra_buffer);
+      dtostrf(dec, 6, 2, dec_buffer);
+      sprintf(buffer, "RA  %s", ra_buffer);
+      display.drawStr(25, 45, buffer);
+      sprintf(buffer, "DEC %s", dec_buffer);
+      display.drawStr(25, 58, buffer);
     }
     while (display.nextPage());
 }
@@ -329,6 +392,7 @@ void loop() {
   motor2.runSpeed();
   digitalWrite(red_led, LOW); //Power indicator
   update_joystick(); //Updates joystick position
+  update_double_press(); //Checks for joystick double press
 
   //Prints joystick reading to serial output - For debugging
   //Serial.print("X: ");
@@ -402,6 +466,33 @@ void loop() {
       }
       current_telescope_status = Manual_Movement;
       break;
+
+    case Polaris_sync:
+      if (double_press) {
+        polaris_ra_steps = motor1.currentPosition(); //Saves motor positions in steps
+        polaris_dec_steps = motor2.currentPosition();
+        current_ra = polaris_ra; //Updates telescope position
+        current_dec = polaris_dec;
+        telescope_calibrated = true;
+        success_time = millis(); //Start success screen timer
+        current_display_status = Success_screen; //Triggers success screen
+        display_needs_updating = true;
+        return;
+      }
+      if (telescope_calibrated) {
+        return;
+      }
+      draw_polaris_sync();
+      break;
+
+    case Success_screen:
+      draw_success_screen("Polaris Alignment", " --- Success ---", polaris_ra, polaris_dec);
+      if (millis() - success_time >= success_delay) {
+        current_display_status = Menu;
+        display_needs_updating = true;
+      }
+      break;
+    
 
     case Track:
       if (joystick_btn_pressed) {
