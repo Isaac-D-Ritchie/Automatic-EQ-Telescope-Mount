@@ -69,10 +69,10 @@ long polaris_ra_steps = 0; //To store telescope position in motor steps
 long polaris_dec_steps = 0;
 const float polaris_ra = 37.95456; //Polaris location for calibration reference
 const float polaris_dec = 89.26411;
-float current_ra = 0; //For tracking position
+float current_ra = 0; //For current tracking position
 float current_dec = 0;
-float steps_per_degree_ra = 10; //Test values <--------------------------- To be calculated
-float steps_per_degree_dec = 10;
+const float steps_per_degree_ra = 426.66; //For gear ratio of 96:1 and 1600 microsteps/rev
+const float steps_per_degree_dec = 22.22; //For gear ratio of 5:1 and 1600 microsteps/rev
 //Joystick variables
 int joystick_x = 0;
 int joystick_y = 0;
@@ -200,8 +200,8 @@ void manual_motor_control() {
   float control_expo = 2.2; //Joystick response curve and calculation
   float control_x = (variable_x >= 0 ? 1 : -1) * pow(abs(variable_x), control_expo);
   float control_y = (variable_y >= 0 ? 1 : -1) * pow(abs(variable_y), control_expo);
-  motor1.setSpeed(control_x * 500); //Motor manual speed control
-  motor2.setSpeed(control_y * 500);
+  motor1.setSpeed(control_x * 2000); //Motor manual speed control
+  motor2.setSpeed(control_y * 100);
 }
 //Motor power control
 void stop_manual_control() {
@@ -216,8 +216,8 @@ void update_coordinates() {
   long current_dec_steps = motor2.currentPosition();
   long ra_difference = current_ra_steps - polaris_ra_steps;
   long dec_difference = current_dec_steps - polaris_dec_steps;
-  current_ra = polaris_ra + (ra_difference / steps_per_degree_ra);
-  current_dec = polaris_dec + (dec_difference / steps_per_degree_dec);
+  current_ra = polaris_ra + ((float)ra_difference / steps_per_degree_ra);
+  current_dec = polaris_dec + ((float)dec_difference / steps_per_degree_dec);
 }
 
 //Display page functions
@@ -390,9 +390,9 @@ void setup() {
   Wire.setClock(400000); //Increases screen I2C speed
   display.setDisplayRotation(U8G2_R2); //Flips display orientation
   //Motor setup
-  motor1.setMaxSpeed(500); //Motor 1 max speed
+  motor1.setMaxSpeed(1000); //Motor 1 max speed
   motor1.setAcceleration(1000);
-  motor2.setMaxSpeed(500); //Motor 2 max speed
+  motor2.setMaxSpeed(1000); //Motor 2 max speed
   motor2.setAcceleration(1000);
   disable_motor(en_pin_1); //Disables motor power on start
   disable_motor(en_pin_2);
@@ -403,7 +403,7 @@ void setup() {
 
 //Arduino main loop
 void loop() {
-  motor1.runSpeed(); //Sends motor steps every loop
+  motor1.runSpeed(); //Sends motor steps every loop <------ changed for testing
   motor2.runSpeed();
   digitalWrite(red_led, LOW); //Power indicator
   update_joystick(); //Updates joystick position
