@@ -21,32 +21,41 @@ import config
 from config import logger
 import reuseable_functions
 import astropy_positions
+import serial_communication
 
 
 """Main code"""
-if __name__ == "__main__":
-    print("Starting Program")
+try:
+    if __name__ == "__main__":
+        print("Starting Program")
+        telescope = serial_communication.TelescopeController("/dev/cu.usbmodem1101") #Telescope serial port
 
-    current_time = astropy_positions.get_time()
-    logger.debug(f"Generated time = {current_time}")
+        logger.debug(f"Generated time = {current_time}")
 
-    observer_location: EarthLocation = (astropy_positions.get_location_info())
+        observer_location: EarthLocation = (astropy_positions.get_location_info())
 
-    while True:
-        target_location: SkyCoord = astropy_positions.get_target_location(observer_location,
-                                                        current_time)
-        #Gets format to parse RA and DEC angles
-        icrs_value_target = target_location.transform_to("icrs")
-        logger.debug(f"Converted target data to icrs = {icrs_value_target}")
+        while True:
+            current_time = astropy_positions.get_time()
+            target_location: SkyCoord = astropy_positions.get_target_location(
+                observer_location, current_time)
+            #Gets format to parse RA and DEC angles
+            icrs_value_target = target_location.transform_to("icrs")
+            logger.debug(f"Converted target data to icrs = {icrs_value_target}")
 
-        mount_angles: tuple[float,float] = astropy_positions.get_mount_angles(icrs_value_target,
-                                            observer_location, current_time)
+            hour_angle, right_ascension, declination = astropy_positions.get_mount_angles(
+                icrs_value_target, observer_location, current_time)
 
-        print(f"Hour angle = {mount_angles[0]:.2f}\n"
-              f"Declination = {mount_angles[1]:.2f}\n"
-              f"Right Ascension = {mount_angles[2]:.2f}\n"
-              f"Altitude = {target_location.alt.deg:.2f}\n")
-        
+
+            print(f"Hour angle = {hour_angle:.2f}\n"
+                  f"Declination = {declination:.2f}\n"
+                  f"Right Ascension = {right_ascension:.2f}\n"
+                  f"Altitude = {target_location.alt.deg:.2f}\n")
+            telescope.goto(hour_angle, declination)
+            time.sleep(5)
+
+except KeyboardInterrupt:
+    telescope.shutdown()
+    logger.info("ASTEPS closed")
 
 
 """Saved Locations"""
