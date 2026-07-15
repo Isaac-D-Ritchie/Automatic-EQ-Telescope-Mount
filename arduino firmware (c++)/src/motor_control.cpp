@@ -395,9 +395,9 @@ void setup() {
   Wire.setClock(400000); //Increases screen I2C speed
   display.setDisplayRotation(U8G2_R2); //Flips display orientation
   //Motor setup
-  motor1.setMaxSpeed(1000); //Motor 1 max speed
+  motor1.setMaxSpeed(3000); //Motor 1 max speed
   motor1.setAcceleration(1000);
-  motor2.setMaxSpeed(1000); //Motor 2 max speed
+  motor2.setMaxSpeed(3000); //Motor 2 max speed
   motor2.setAcceleration(1000);
   disable_motor(en_pin_1); //Disables motor power on start
   disable_motor(en_pin_2);
