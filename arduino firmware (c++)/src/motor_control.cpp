@@ -43,6 +43,12 @@ enum screen_state {
   Settings
 };
 screen_state current_display_status = Logo; //Sets starting screen to Logo
+//Success screen types
+enum success_type {
+  Polaris_success,
+  Data_import_success
+};
+success_type current_success_type = Polaris_success;
 //Telescope status for device monitoring
 enum telescope_status {
   Idle,
@@ -63,7 +69,7 @@ menu_items selected_menu_item = select_manual;
 
 
 //Global variables
-//Telescope calibration
+//Telescope calibration and positioning
 bool telescope_calibrated = false;
 long polaris_ra_steps = 0; //To store telescope position in motor steps
 long polaris_dec_steps = 0;
@@ -71,13 +77,16 @@ const float polaris_ra = 37.95456; //Polaris location for calibration reference
 const float polaris_dec = 89.26411;
 float current_ra = 0; //For current tracking position
 float current_dec = 0;
+float target_ra = 0; //Value to be received from serial port
+float target_dec = 0;
+bool target_data_received = false; //To trigger tracking events
 //Motor and gear ratio variables
-const int motor_steps = 200;
-const int microsteps = 8;
-const int ra_ratio = 96; //96:1 worm gear
-const int dec_ratio = 5; //5:1 spur gear
-const float steps_per_degree_ra = (motor_steps * microsteps * ra_ratio) / 360.0f;
-const float steps_per_degree_dec = (motor_steps * microsteps * dec_ratio) / 360.0f;
+const uint16_t motor_steps = 200;
+const uint8_t microsteps = 8;
+const uint16_t ra_ratio = 96; //96:1 worm gear
+const uint16_t dec_ratio = 5; //5:1 spur gear
+const float steps_per_degree_ra = ((long)motor_steps * microsteps * ra_ratio) / 360.0f;
+const float steps_per_degree_dec = ((long)motor_steps * microsteps * dec_ratio) / 360.0f;
 //Joystick variables
 int joystick_x = 0;
 int joystick_y = 0;
@@ -330,7 +339,7 @@ void draw_success_screen(const char* title, const char* message, float ra, float
       display.drawStr(0, 15, title);
       display.setFont(u8g2_font_7x13_tr);
       display.drawStr(0, 30, message);
-      char buffer[16];
+      char buffer[32];
       char ra_buffer[10];
       char dec_buffer[10];
       dtostrf(ra, 6, 2, ra_buffer);
@@ -351,12 +360,33 @@ void draw_track() {
     display.firstPage();
     do
     {
-      display.setFont(u8g2_font_7x13_tr);
-      display.drawStr(20, 15, "Tracking");
-      display.setFont(u8g2_font_6x10_tr);
-      display.drawStr(20, 30, "Waiting for data...");
-      display.drawStr(20, 45, "Traget RA = ____");
-      display.drawStr(20, 60, "Target DEC = ___");
+    display.setFont(u8g2_font_7x13B_tr);
+    char buffer[32];
+    char ra_buffer[12];
+    char dec_buffer[12];
+    display.drawStr(10, 10, "Tracking System");
+    display.setFont(u8g2_font_6x10_tr);
+    display.drawStr(0, 22, "Current Position:");
+    dtostrf(current_ra, 6, 2, ra_buffer);
+    dtostrf(current_dec, 6, 2, dec_buffer);
+    sprintf(buffer, "RA:%s", ra_buffer);
+    display.drawStr(0, 33, buffer);
+    sprintf(buffer, "DEC:%s", dec_buffer);
+    display.drawStr(65, 33, buffer);
+    if (target_data_received) { //Ask for data for display data if available
+      display.drawStr(0, 46, "Target Position:");
+      dtostrf(target_ra, 6, 2, ra_buffer);
+      dtostrf(target_dec, 6, 2, dec_buffer);
+      sprintf(buffer, "RA:%s", ra_buffer);
+      display.drawStr(0, 57, buffer);
+      sprintf(buffer, "DEC:%s", dec_buffer);
+      display.drawStr(65, 57, buffer);
+    }
+    else {
+      display.setFont(u8g2_font_ncenB08_tr);
+      display.drawStr(5, 46, "Waiting for tracking");
+      display.drawStr(10, 58, "coordinate data...");
+    }
     }
     while (display.nextPage());
 }
@@ -495,6 +525,7 @@ void loop() {
         current_ra = polaris_ra; //Updates telescope position
         current_dec = polaris_dec;
         telescope_calibrated = true;
+        current_success_type = Polaris_success;
         success_time = millis(); //Start success screen timer
         current_display_status = Success_screen; //Triggers success screen
         display_needs_updating = true;
@@ -504,12 +535,27 @@ void loop() {
       break;
 
     case Success_screen:
-      draw_success_screen("Polaris Alignment", " --- Success ---", polaris_ra, polaris_dec);
+      switch (current_success_type)
+      {
+      case Polaris_success:
+        draw_success_screen("Polaris Alignment", " --- Success ---", polaris_ra, polaris_dec);
+        break;
+      
+      case Data_import_success:
+        draw_success_screen("Data Import", " --- Success ---", target_ra, target_dec);
+        break;
+      }
       if (millis() - success_time >= success_delay) {
-        current_display_status = Menu;
+        if (current_success_type == Data_import_success) {
+          current_display_status = Track; //Directs back to track after data import
+        }
+        else {
+          current_display_status = Menu; //Directs back to menu after calibration
+        }
         display_needs_updating = true;
       }
       break;
+      
     
 
     case Track:
