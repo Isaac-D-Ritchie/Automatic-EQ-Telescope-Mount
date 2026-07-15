@@ -71,8 +71,13 @@ const float polaris_ra = 37.95456; //Polaris location for calibration reference
 const float polaris_dec = 89.26411;
 float current_ra = 0; //For current tracking position
 float current_dec = 0;
-const float steps_per_degree_ra = 426.66; //For gear ratio of 96:1 and 1600 microsteps/rev
-const float steps_per_degree_dec = 22.22; //For gear ratio of 5:1 and 1600 microsteps/rev
+//Motor and gear ratio variables
+const int motor_steps = 200;
+const int microsteps = 8;
+const int ra_ratio = 96; //96:1 worm gear
+const int dec_ratio = 5; //5:1 spur gear
+const float steps_per_degree_ra = (motor_steps * microsteps * ra_ratio) / 360.0f;
+const float steps_per_degree_dec = (motor_steps * microsteps * dec_ratio) / 360.0f;
 //Joystick variables
 int joystick_x = 0;
 int joystick_y = 0;
