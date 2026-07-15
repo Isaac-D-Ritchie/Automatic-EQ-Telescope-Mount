@@ -103,7 +103,7 @@ unsigned long last_display_refresh = 0;
 const unsigned long display_refresh = 250; //Screen refresh rate (ms)
 bool display_needs_updating = true; //For only refreshing screen when needed
 unsigned long success_time = 0; //Timer for success screen
-const unsigned long success_delay = 4000; //ms
+const unsigned long success_delay = 3000; //ms
 
 
 //Non display functions
@@ -152,7 +152,6 @@ void update_double_press() {
     second_press_waiting = false;
   }
 }
-
 //Joystick Option Selection function 
 void option_selection() {
   if (!joystick_stop) {
@@ -233,7 +232,82 @@ void update_coordinates() {
   current_ra = polaris_ra + ((float)ra_difference / steps_per_degree_ra);
   current_dec = polaris_dec + ((float)dec_difference / steps_per_degree_dec);
 }
-
+//Function to calculate target go-to movement in motor steps
+void goto_target() {
+  enable_motor(en_pin_1); //Enables motors
+  enable_motor(en_pin_2);
+  long target_ra_steps = polaris_ra_steps + ((target_ra - polaris_ra) * steps_per_degree_ra);
+  long target_dec_steps = polaris_dec_steps + ((target_dec - polaris_dec) * steps_per_degree_dec);
+  motor1.moveTo(target_ra_steps);
+  motor2.moveTo(target_dec_steps);
+  current_telescope_status = Targeting_Go_To;
+}
+//Function to retrieve incoming target data from serial
+void receive_target_data() {
+  if (!Serial.available()) {
+    return;
+  }
+  String target_data = Serial.readStringUntil('\n');
+  target_data.trim();
+  int first_comma = target_data.indexOf(','); //Detecting gap between command, ra and dec coordinates
+  String command;
+  if (first_comma == -1) { //Extracts serial command
+    command = target_data;
+  }
+  else {
+    command = target_data.substring(0, first_comma);
+  }
+  if (command == "GOTO") { //Tells motors to move to target
+    int second_comma = target_data.indexOf(',', first_comma + 1);
+    if (second_comma == -1) { //Checking for data error
+      Serial.println("ERROR - Data Formatting");
+      return;
+    }
+    target_ra = target_data.substring(first_comma + 1, second_comma).toFloat();
+    target_dec = target_data.substring(second_comma + 1).toFloat();
+    target_data_received = true;
+    goto_target();
+    Serial.println("CONFIRM");
+    current_success_type = Data_import_success;
+    success_time = millis();
+    current_display_status = Success_screen;
+    display_needs_updating = true;
+    return;
+  }
+  else if (command == "STOP") { //Tells motors to stop (Emergency stop)
+    motor1.stop();
+    motor2.stop();
+    current_telescope_status = Idle;
+    Serial.println("CONFIRM");
+    return;
+  }
+  else if (command == "STATUS") { //Prints telescope current status to serial
+    Serial.println("CONFIRM");
+    Serial.print("LOCATION STATUS,");
+    Serial.print(current_ra);
+    Serial.print(",");
+    Serial.println(current_dec);
+    Serial.print("SYSTEM STATUS,");
+    Serial.print(current_telescope_status);
+    Serial.print(current_display_status);
+    return;
+  }
+  else {
+    Serial.print("ERROR - Unknown Command");
+  }
+}
+//Function to track go-to movements
+void update_goto() {
+  if (current_telescope_status != Targeting_Go_To) {
+      return;
+  }
+  if (motor1.distanceToGo() == 0 && motor2.distanceToGo() == 0) {
+      Serial.println("Arrived."); //Announce target arrival to serial
+      current_telescope_status = Tracking_Object;
+      current_ra = target_ra;
+      current_dec = target_dec;
+  }
+}
 //Display page functions
 //Logo Screen
 void draw_logo() {
@@ -351,7 +425,7 @@ void draw_success_screen(const char* title, const char* message, float ra, float
     }
     while (display.nextPage());
 }
-//Track control screen <--- Plans to make integration with python for object search / Go-To
+//Track control screen
 void draw_track() { 
     if (!display_needs_updating) {
       return;
@@ -433,25 +507,23 @@ void setup() {
   disable_motor(en_pin_2);
 
   Serial.begin(115200);
+
+  target_ra = 120.0; //Test go-to data
+  target_dec = 45.0;
+  target_data_received = true;
+  goto_target();
 }
 
 
 //Arduino main loop
 void loop() {
-  motor1.runSpeed(); //Sends motor steps every loop <------ changed for testing
-  motor2.runSpeed();
+  motor1.run(); //Sends motor steps every loop
+  motor2.run();
   digitalWrite(red_led, LOW); //Power indicator
   update_joystick(); //Updates joystick position
   update_double_press(); //Checks for joystick double press
-
-  //Prints joystick reading to serial output - For debugging
-  //Serial.print("X: ");
-  //Serial.print(joystick_x);
-  //Serial.print("  Y: ");
-  //Serial.print(joystick_y);
-  //Serial.print("  Button: ");
-  //Serial.println(joystick_btn);
-
+  receive_target_data(); //Looks for target data from serial port
+  update_goto(); //Updates position to track go-to movement
 
   //Switch cases for display
   switch (current_display_status)
