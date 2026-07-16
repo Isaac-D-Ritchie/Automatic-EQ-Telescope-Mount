@@ -11,12 +11,14 @@ for my 135 diameter, 800mm Telescope with a manual equatorial mount.
 
 This main file imports functions from other files in /software (python)
     # astropy_positions
-    # config_and_logging
-    # motor_controls
-    # reuseable_functions)
+    # config_
+    # main
+    # reuseable_functions
+    # serial_communication
 """
 
 """Imports"""
+import datetime
 import config
 from config import logger
 import reuseable_functions
@@ -28,8 +30,12 @@ import serial_communication
 try:
     if __name__ == "__main__":
         print("Starting Program")
-        telescope = serial_communication.TelescopeController("/dev/cu.usbmodem1101") #Telescope serial port
+        telescope = serial_communication.TelescopeController("/dev/cu.usbmodem11301") #Telescope serial port
+        if not telescope.connect(): #Closes program if user chooses not to connect after fail
+            print("Closing Program")
+            exit()
 
+        current_time = datetime.datetime.now()
         logger.debug(f"Generated time = {current_time}")
 
         observer_location: EarthLocation = (astropy_positions.get_location_info())

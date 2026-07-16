@@ -249,6 +249,7 @@ void receive_target_data() {
   }
   String target_data = Serial.readStringUntil('\n');
   target_data.trim();
+
   int first_comma = target_data.indexOf(','); //Detecting gap between command, ra and dec coordinates
   String command;
   if (first_comma == -1) { //Extracts serial command
@@ -257,7 +258,11 @@ void receive_target_data() {
   else {
     command = target_data.substring(0, first_comma);
   }
-  if (command == "GOTO") { //Tells motors to move to target
+  if (command == "START") { //Tells python a connection has been made
+    Serial.println("READY");
+    return;
+  }
+  else if (command == "GOTO") { //Tells motors to move to target
     int second_comma = target_data.indexOf(',', first_comma + 1);
     if (second_comma == -1) { //Checking for data error
       Serial.println("ERROR - Data Formatting");
@@ -292,8 +297,8 @@ void receive_target_data() {
     Serial.print(current_display_status);
     return;
   }
-  else {
-    Serial.print("ERROR - Unknown Command");
+  else { //Issues readying junk bits as unknown error, commented out for development testing
+   //Serial.println("ERROR - Unknown Command");
   }
 }
 //Function to track go-to movements
@@ -319,7 +324,7 @@ void draw_logo() {
     display.firstPage();
     do
     {
-      display.setFont(u8g2_font_ncenB18_tr);
+      display.setFont(u8g2_font_ncenB08_tr);
       display.drawStr(10, 30, "ASTEPS");
       display.setFont(u8g2_font_6x10_tr);
       display.drawStr(20, 50, "Press Joystick");
@@ -505,13 +510,10 @@ void setup() {
   motor2.setAcceleration(1000);
   disable_motor(en_pin_1); //Disables motor power on start
   disable_motor(en_pin_2);
-
+  //Booting sequence (serial port)
   Serial.begin(115200);
-
-  target_ra = 120.0; //Test go-to data
-  target_dec = 45.0;
-  target_data_received = true;
-  goto_target();
+  delay(2000);
+  Serial.println("ASTEPS BOOTED");
 }
 
 

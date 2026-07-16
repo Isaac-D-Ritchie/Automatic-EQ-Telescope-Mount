@@ -8,10 +8,49 @@ import serial #For serial port communication
 import time
 
 class TelescopeController:
-    def __innit__(self, port: str, baudrate: int = 115200):
-        self.serial = serial.Serial(port= port, baudrate= baudrate, timeout= 1)
-        time.sleep(2) #Wait for micrcontroller to respond after connection
+    def __init__(self, port: str, baudrate: int = 115200):
+        self.port = port
+        self.baudrate = baudrate
+        self.serial = None
+
+    def start(self): #For making connection handshake to telescope
+        self.serial.reset_input_buffer()
+        self.serial.write(b"START\n")
+        self.serial.flush() #Force send all serial data
+
+        delay = time.time() + 3 #Delay for connection
+        while time.time() < delay:
+            if self.serial.in_waiting:
+                response = self.serial.readline().decode(errors="ignore").strip()
+                print(repr(response)) #Prints incoming serial data
+                if response == "READY":
+                    return True
+        return False
     
+    def connect(self): #Prompts user to try again if connection was not made - returns true if connection made
+        while True:
+            print("Attempting to connect...")
+            try:
+                self.serial = serial.Serial(port=self.port,baudrate=self.baudrate,timeout=1)
+                time.sleep(3) #Wait for telescope to boot/load
+
+            except serial.SerialException as e: #Exception if serial port cannot be opened
+                print(F"Unable to open serial port - {e}")
+                retry = input("Try again? (Y/N): ").strip().lower()
+                if retry != "y":
+                    return False
+                continue
+
+            if self.start():
+                print("Connection successful.")
+                return True
+
+            print("Connection failed")
+            self.serial.close()
+            retry = input("Try again? (Y/N): ").strip().lower()
+            if retry != "y":
+                return False
+
     def goto(self, hour_angle: float, declination: float): #For sending target data
         command = f"GOTO,{hour_angle:.6f},{declination:.6f}\n"
         self.serial.write(command.encode())
