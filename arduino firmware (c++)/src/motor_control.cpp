@@ -71,21 +71,21 @@ menu_items selected_menu_item = select_manual;
 //Global variables
 //Telescope calibration and positioning
 bool telescope_calibrated = false;
-long polaris_ra_steps = 0; //To store telescope position in motor steps
+long polaris_ha_steps = 0; //To store telescope position in motor steps
 long polaris_dec_steps = 0;
-const float polaris_ra = 37.95456; //Polaris location for calibration reference
+const float polaris_ha = 37.95456; //Polaris location for calibration reference
 const float polaris_dec = 89.26411;
-float current_ra = 0; //For current tracking position
+float current_ha = 0; //For current tracking position
 float current_dec = 0;
-float target_ra = 0; //Value to be received from serial port
+float target_ha = 0; //Value to be received from serial port
 float target_dec = 0;
 bool target_data_received = false; //To trigger tracking events
 //Motor and gear ratio variables
 const uint16_t motor_steps = 200;
 const uint8_t microsteps = 8;
-const uint16_t ra_ratio = 96; //96:1 worm gear
+const uint16_t ha_ratio = 96; //96:1 worm gear
 const uint16_t dec_ratio = 5; //5:1 spur gear
-const float steps_per_degree_ra = ((long)motor_steps * microsteps * ra_ratio) / 360.0f;
+const float steps_per_degree_ha = ((long)motor_steps * microsteps * ha_ratio) / 360.0f;
 const float steps_per_degree_dec = ((long)motor_steps * microsteps * dec_ratio) / 360.0f;
 //Joystick variables
 int joystick_x = 0;
@@ -155,7 +155,7 @@ void update_double_press() {
 //Joystick Option Selection function 
 void option_selection() {
   if (!joystick_stop) {
-    if (joystick_y < -300) { //Move up
+    if (joystick_y < -300) { //Move up menu
       joystick_stop = true;
       switch (selected_menu_item)
       {
@@ -178,7 +178,7 @@ void option_selection() {
         break;
       }
     }
-    else if (joystick_y > 300) { //Move down
+    else if (joystick_y > 300) { //Move down menu
       joystick_stop = true;
       switch (selected_menu_item)
       {
@@ -225,20 +225,20 @@ void stop_manual_control() {
 }
 //Motor coordinate updater
 void update_coordinates() {
-  long current_ra_steps = motor1.currentPosition();
+  long current_ha_steps = motor1.currentPosition();
   long current_dec_steps = motor2.currentPosition();
-  long ra_difference = current_ra_steps - polaris_ra_steps;
+  long ha_difference = current_ha_steps - polaris_ha_steps;
   long dec_difference = current_dec_steps - polaris_dec_steps;
-  current_ra = polaris_ra + ((float)ra_difference / steps_per_degree_ra);
+  current_ha = polaris_ha + ((float)ha_difference / steps_per_degree_ha);
   current_dec = polaris_dec + ((float)dec_difference / steps_per_degree_dec);
 }
 //Function to calculate target go-to movement in motor steps
 void goto_target() {
   enable_motor(en_pin_1); //Enables motors
   enable_motor(en_pin_2);
-  long target_ra_steps = polaris_ra_steps + ((target_ra - polaris_ra) * steps_per_degree_ra);
+  long target_ha_steps = polaris_ha_steps + ((target_ha - polaris_ha) * steps_per_degree_ha);
   long target_dec_steps = polaris_dec_steps + ((target_dec - polaris_dec) * steps_per_degree_dec);
-  motor1.moveTo(target_ra_steps);
+  motor1.moveTo(target_ha_steps);
   motor2.moveTo(target_dec_steps);
   current_telescope_status = Targeting_Go_To;
 }
@@ -250,7 +250,7 @@ void receive_target_data() {
   String target_data = Serial.readStringUntil('\n');
   target_data.trim();
 
-  int first_comma = target_data.indexOf(','); //Detecting gap between command, ra and dec coordinates
+  int first_comma = target_data.indexOf(','); //Detecting gap between command, ha and dec coordinates
   String command;
   if (first_comma == -1) { //Extracts serial command
     command = target_data;
@@ -268,7 +268,7 @@ void receive_target_data() {
       Serial.println("ERROR - Data Formatting");
       return;
     }
-    target_ra = target_data.substring(first_comma + 1, second_comma).toFloat();
+    target_ha = target_data.substring(first_comma + 1, second_comma).toFloat();
     target_dec = target_data.substring(second_comma + 1).toFloat();
     target_data_received = true;
     goto_target();
@@ -289,7 +289,7 @@ void receive_target_data() {
   else if (command == "STATUS") { //Prints telescope current status to serial
     Serial.println("CONFIRM");
     Serial.print("LOCATION STATUS,");
-    Serial.print(current_ra);
+    Serial.print(current_ha);
     Serial.print(",");
     Serial.println(current_dec);
     Serial.print("SYSTEM STATUS,");
@@ -309,7 +309,7 @@ void update_goto() {
   if (motor1.distanceToGo() == 0 && motor2.distanceToGo() == 0) {
       Serial.println("Arrived."); //Announce target arrival to serial
       current_telescope_status = Tracking_Object;
-      current_ra = target_ra;
+      current_ha = target_ha;
       current_dec = target_dec;
   }
 }
@@ -376,11 +376,11 @@ void draw_manual() {
       display.setFont(u8g2_font_6x10_tr);
       display.drawStr(20, 30, "Current position");
       char buffer[20];
-      char ra_buffer[10];
+      char ha_buffer[10];
       char dec_buffer[10];
-      dtostrf(current_ra, 6, 2, ra_buffer);
+      dtostrf(current_ha, 6, 2,ha_buffer);
       dtostrf(current_dec, 6, 2, dec_buffer);
-      sprintf(buffer, "RA = %s", ra_buffer);
+      sprintf(buffer, "HA = %s",ha_buffer);
       display.drawStr(20,45,buffer);
       sprintf(buffer, "DEC=%s", dec_buffer);
       display.drawStr(20,60,buffer);
@@ -406,7 +406,7 @@ void draw_polaris_sync() {
     while (display.nextPage());
 }
 //Success screen
-void draw_success_screen(const char* title, const char* message, float ra, float dec) {
+void draw_success_screen(const char* title, const char* message, float ha, float dec) {
     if (!display_needs_updating) {
       return;
     }
@@ -419,11 +419,11 @@ void draw_success_screen(const char* title, const char* message, float ra, float
       display.setFont(u8g2_font_7x13_tr);
       display.drawStr(0, 30, message);
       char buffer[32];
-      char ra_buffer[10];
+      char ha_buffer[10];
       char dec_buffer[10];
-      dtostrf(ra, 6, 2, ra_buffer);
+      dtostrf(ha, 6, 2, ha_buffer);
       dtostrf(dec, 6, 2, dec_buffer);
-      sprintf(buffer, "RA  %s", ra_buffer);
+      sprintf(buffer, "HA  %s", ha_buffer);
       display.drawStr(25, 45, buffer);
       sprintf(buffer, "DEC %s", dec_buffer);
       display.drawStr(25, 58, buffer);
@@ -441,22 +441,22 @@ void draw_track() {
     {
     display.setFont(u8g2_font_7x13B_tr);
     char buffer[32];
-    char ra_buffer[12];
+    char ha_buffer[12];
     char dec_buffer[12];
     display.drawStr(10, 10, "Tracking System");
     display.setFont(u8g2_font_6x10_tr);
     display.drawStr(0, 22, "Current Position:");
-    dtostrf(current_ra, 6, 2, ra_buffer);
+    dtostrf(current_ha, 6, 2,ha_buffer);
     dtostrf(current_dec, 6, 2, dec_buffer);
-    sprintf(buffer, "RA:%s", ra_buffer);
+    sprintf(buffer, "RA:%s",ha_buffer);
     display.drawStr(0, 33, buffer);
     sprintf(buffer, "DEC:%s", dec_buffer);
     display.drawStr(65, 33, buffer);
     if (target_data_received) { //Ask for data for display data if available
       display.drawStr(0, 46, "Target Position:");
-      dtostrf(target_ra, 6, 2, ra_buffer);
+      dtostrf(target_ha, 6, 2,ha_buffer);
       dtostrf(target_dec, 6, 2, dec_buffer);
-      sprintf(buffer, "RA:%s", ra_buffer);
+      sprintf(buffer, "RA:%s",ha_buffer);
       display.drawStr(0, 57, buffer);
       sprintf(buffer, "DEC:%s", dec_buffer);
       display.drawStr(65, 57, buffer);
@@ -594,9 +594,9 @@ void loop() {
 
     case Polaris_sync:
       if (double_press) {
-        polaris_ra_steps = motor1.currentPosition(); //Saves motor positions in steps
+        polaris_ha_steps = motor1.currentPosition(); //Saves motor positions in steps
         polaris_dec_steps = motor2.currentPosition();
-        current_ra = polaris_ra; //Updates telescope position
+        current_ha = polaris_ha; //Updates telescope position
         current_dec = polaris_dec;
         telescope_calibrated = true;
         current_success_type = Polaris_success;
@@ -612,11 +612,11 @@ void loop() {
       switch (current_success_type)
       {
       case Polaris_success:
-        draw_success_screen("Polaris Alignment", " --- Success ---", polaris_ra, polaris_dec);
+        draw_success_screen("Polaris Alignment", " --- Success ---", polaris_ha, polaris_dec);
         break;
       
       case Data_import_success:
-        draw_success_screen("Data Import", " --- Success ---", target_ra, target_dec);
+        draw_success_screen("Data Import", " --- Success ---", target_ha, target_dec);
         break;
       }
       if (millis() - success_time >= success_delay) {
