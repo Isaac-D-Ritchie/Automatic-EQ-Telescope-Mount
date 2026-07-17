@@ -73,8 +73,10 @@ menu_items selected_menu_item = select_manual;
 bool telescope_calibrated = false;
 long polaris_ha_steps = 0; //To store telescope position in motor steps
 long polaris_dec_steps = 0;
-const float polaris_ha = 37.95456; //Polaris location for calibration reference
-const float polaris_dec = 89.26411;
+float polaris_ha = 0; //Current local polaris ha and dec to be sent by python code later
+float polaris_dec = 0;
+bool calibration_data_received = false; //For checking if local polaris is present for calibration
+bool calibration_requested = false;
 float current_ha = 0; //For current tracking position
 float current_dec = 0;
 float target_ha = 0; //Value to be received from serial port
@@ -234,6 +236,10 @@ void update_coordinates() {
 }
 //Function to calculate target go-to movement in motor steps
 void goto_target() {
+  if (!telescope_calibrated) { //Wont accept GOTO commands unless telescope is calibrated
+    Serial.println("ERROR - Telescope Not Calibrated");
+    return;
+  }
   enable_motor(en_pin_1); //Enables motors
   enable_motor(en_pin_2);
   long target_ha_steps = polaris_ha_steps + ((target_ha - polaris_ha) * steps_per_degree_ha);
@@ -262,10 +268,23 @@ void receive_target_data() {
     Serial.println("READY");
     return;
   }
+  else if (command == "CALIBRATE") { //Sets calibration data for polaris variables
+    int second_comma = target_data.indexOf(',', first_comma + 1);
+    if (second_comma == -1) {
+        Serial.println("ERROR - Calibration Data Formatting");
+        return;
+    }
+    polaris_ha = target_data.substring(first_comma + 1, second_comma).toFloat(); //Saves received polaris data
+    polaris_dec = target_data.substring(second_comma + 1).toFloat();
+    calibration_data_received = true;
+    Serial.println("CONFIRM");
+    return;
+
+}
   else if (command == "GOTO") { //Tells motors to move to target
     int second_comma = target_data.indexOf(',', first_comma + 1);
     if (second_comma == -1) { //Checking for data error
-      Serial.println("ERROR - Data Formatting");
+      Serial.println("ERROR - GOTO Data Formatting");
       return;
     }
     target_ha = target_data.substring(first_comma + 1, second_comma).toFloat();
@@ -294,7 +313,10 @@ void receive_target_data() {
     Serial.println(current_dec);
     Serial.print("SYSTEM STATUS,");
     Serial.print(current_telescope_status);
+    Serial.print(",");
     Serial.print(current_display_status);
+    Serial.print("CALIBRATED,");
+    Serial.println(telescope_calibrated);
     return;
   }
   else { //Issues readying junk bits as unknown error, commented out for development testing
@@ -448,7 +470,7 @@ void draw_track() {
     display.drawStr(0, 22, "Current Position:");
     dtostrf(current_ha, 6, 2,ha_buffer);
     dtostrf(current_dec, 6, 2, dec_buffer);
-    sprintf(buffer, "RA:%s",ha_buffer);
+    sprintf(buffer, "HA:%s",ha_buffer);
     display.drawStr(0, 33, buffer);
     sprintf(buffer, "DEC:%s", dec_buffer);
     display.drawStr(65, 33, buffer);
@@ -456,7 +478,7 @@ void draw_track() {
       display.drawStr(0, 46, "Target Position:");
       dtostrf(target_ha, 6, 2,ha_buffer);
       dtostrf(target_dec, 6, 2, dec_buffer);
-      sprintf(buffer, "RA:%s",ha_buffer);
+      sprintf(buffer, "HA:%s",ha_buffer);
       display.drawStr(0, 57, buffer);
       sprintf(buffer, "DEC:%s", dec_buffer);
       display.drawStr(65, 57, buffer);
@@ -593,12 +615,22 @@ void loop() {
       break;
 
     case Polaris_sync:
+        if (!calibration_requested) { //Requests calibration data from serial
+          Serial.println("REQUEST_CALIBRATION");
+          calibration_requested = true;
+    }
       if (double_press) {
+          if (!calibration_data_received) {
+          Serial.println("ERROR - No Calibration Data");
+          return;
+        }
         polaris_ha_steps = motor1.currentPosition(); //Saves motor positions in steps
         polaris_dec_steps = motor2.currentPosition();
         current_ha = polaris_ha; //Updates telescope position
         current_dec = polaris_dec;
         telescope_calibrated = true;
+        calibration_requested = false; //Resets calibration data checks for next alignment
+        calibration_data_received = false;
         current_success_type = Polaris_success;
         success_time = millis(); //Start success screen timer
         current_display_status = Success_screen; //Triggers success screen
