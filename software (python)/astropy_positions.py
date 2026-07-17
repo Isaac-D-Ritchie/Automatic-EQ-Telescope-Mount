@@ -173,7 +173,7 @@ def get_mount_angles(icrs_data: SkyCoord, location: EarthLocation,
     hour_angle_deg = hour_angle.to(u.deg).value #For tracking
     logger.debug(f"Calculated local hour angle at {hour_angle_deg}")
 
-    motor_data_tuple = (hour_angle_deg, dec_deg, ra_deg)
+    motor_data_tuple = (hour_angle_deg, ra_deg, dec_deg)
     logger.info("Generated position data for mount")
     logger.debug(f"data = {motor_data_tuple}")
     return motor_data_tuple
