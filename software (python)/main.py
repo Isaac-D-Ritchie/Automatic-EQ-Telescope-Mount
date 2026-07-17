@@ -40,6 +40,19 @@ try:
 
         observer_location: EarthLocation = (astropy_positions.get_location_info())
 
+        polaris = astropy_positions.get_polaris_position() #Gets Polaris coordinates
+        current_time = astropy_positions.get_time()
+        polaris_ha, polaris_dec, polaris_ra = astropy_positions.get_mount_angles(
+            polaris, observer_location, current_time) # Convert Polaris coordinates to mount angles
+        
+        # Wait for Arduino request
+        if telescope.wait_for_calibration():
+            print("Sending Polaris calibration data...")
+            telescope.calibrate(polaris_ha, polaris_dec)
+
+            if telescope.wait_for_calibration_complete():
+                print("Calibration successful\n")
+
         while True:
             current_time = astropy_positions.get_time()
             target_location: SkyCoord = astropy_positions.get_target_location(

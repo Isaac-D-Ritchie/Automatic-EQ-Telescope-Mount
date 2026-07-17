@@ -142,6 +142,14 @@ def get_target_location(t_location: EarthLocation,
             continue
 
 
+def get_polaris_position(): 
+    """
+    Generates Polaris ICRS coordinates for calibration
+    """
+    polaris = SkyCoord(ra="02h31m49.09s",dec="+89d15m50.8s",frame="icrs")
+    return polaris
+
+
 def get_mount_angles(icrs_data: SkyCoord, location: EarthLocation, 
                      local_time: Time) -> tuple[float, float, float]:
     """

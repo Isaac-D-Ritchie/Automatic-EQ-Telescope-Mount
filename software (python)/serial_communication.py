@@ -60,6 +60,30 @@ class TelescopeController:
         self.serial.write(command.encode())
 
 
+    def calibrate(self, hour_angle: float, declination: float):
+        command = f"CALIBRATE,{hour_angle:.6f},{declination:.6f}\n"
+        self.serial.write(command.encode())
+
+
+    def wait_for_calibration(self): #Waits for user to request calibration telescope
+        print("\nWaiting for telescope calibration request...")
+        while True:
+            if self.serial.in_waiting:
+                response = self.serial.readline().decode(errors="ignore").strip()
+                print(f"Arduino: {response}")
+                if response == "REQUEST_CALIBRATION":
+                    return True
+
+
+    def wait_for_calibration_complete(self): #Waits for calibration to be complete before proceeding
+        print("Waiting for Polaris alignment...")
+        while True:
+            if self.serial.in_waiting:
+                response = self.serial.readline().decode(errors="ignore").strip()
+                print(f"Arduino: {response}")
+                if response == "CALIBRATION_COMPLETE":
+                    return True
+
     def stop(self): #For sending emergency stop
         self.serial.write(b"STOP\n")
 
