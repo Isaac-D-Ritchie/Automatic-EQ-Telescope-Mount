@@ -254,23 +254,29 @@ void receive_target_data() {
     return;
   }
   String target_data = Serial.readStringUntil('\n');
+  
   target_data.trim();
+  Serial.println(target_data);
 
   int first_comma = target_data.indexOf(','); //Detecting gap between command, ha and dec coordinates
-  String command;
+  String command = "";
+  command.trim();
   if (first_comma == -1) { //Extracts serial command
     command = target_data;
   }
   else {
     command = target_data.substring(0, first_comma);
   }
+  Serial.print("Command detected: ");
+  Serial.println(command);
+
   if (command == "START") { //Tells python a connection has been made
     Serial.println("READY");
     return;
   }
   else if (command == "CALIBRATE") { //Sets calibration data for polaris variables
     int second_comma = target_data.indexOf(',', first_comma + 1);
-    if (second_comma == -1) {
+    if (second_comma == -1) { //Checking for data error
         Serial.println("ERROR - Calibration Data Formatting");
         return;
     }

@@ -63,6 +63,7 @@ class TelescopeController:
     def calibrate(self, hour_angle: float, declination: float):
         command = f"CALIBRATE,{hour_angle:.6f},{declination:.6f}\n"
         self.serial.write(command.encode())
+        self.serial.flush()
 
 
     def wait_for_calibration(self): #Waits for user to request calibration telescope

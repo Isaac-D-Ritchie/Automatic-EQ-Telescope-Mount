@@ -49,7 +49,7 @@ try:
         if telescope.wait_for_calibration():
             print("Sending Polaris calibration data...")
             telescope.calibrate(polaris_ha, polaris_dec)
-
+            
             if telescope.wait_for_calibration_complete():
                 print("Calibration successful\n")
 
