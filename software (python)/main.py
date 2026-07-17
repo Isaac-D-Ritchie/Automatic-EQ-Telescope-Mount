@@ -29,7 +29,7 @@ import serial_communication
 """Main code"""
 try:
     if __name__ == "__main__":
-        print("Starting Program")
+        print("\n--- Starting Program ---")
         telescope = serial_communication.TelescopeController("/dev/cu.usbmodem11301") #Telescope serial port
         if not telescope.connect(): #Closes program if user chooses not to connect after fail
             print("Closing Program")
@@ -51,7 +51,6 @@ try:
             hour_angle, right_ascension, declination = astropy_positions.get_mount_angles(
                 icrs_value_target, observer_location, current_time)
 
-
             print(f"Hour angle = {hour_angle:.2f}\n"
                   f"Declination = {declination:.2f}\n"
                   f"Right Ascension = {right_ascension:.2f}\n"
@@ -61,7 +60,7 @@ try:
 
 except KeyboardInterrupt:
     telescope.shutdown()
-    logger.info("ASTEPS closed")
+    logger.info("Keyboard Interrupt - Closing Program")
 
 
 """Saved Locations"""

@@ -60,10 +60,10 @@ def get_location_info() -> EarthLocation:
             u_height = (sea_level * u.m)
 
             logger.info("Location data parsed from user")
-            print(f"\nCurrent Information\n"
+            print(f"\n--- Current Information ---\n"
                   f"Latitude: {latitude}°\n"
                   f"Longitude: {longitude}°\n"
-                  f"Sea level: {sea_level}m"
+                  f"Sea level: {sea_level}m\n"
                 )
             while True: #Input confirmation
                 confirm = reuseable_functions.safe_input("Is this correct? (Y/N)").lower()
