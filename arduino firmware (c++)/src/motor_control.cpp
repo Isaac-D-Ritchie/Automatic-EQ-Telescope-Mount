@@ -238,7 +238,7 @@ void update_coordinates() {
 //Function to calculate target go-to movement in motor steps
 void goto_target() {
   if (!telescope_calibrated) { //Wont accept GOTO commands unless telescope is calibrated
-    Serial.println("ERROR - Telescope Not Calibrated");
+    Serial.println(F("ERROR - Telescope Not Calibrated"));
     return;
   }
   enable_motor(en_pin_1); //Enables motors
@@ -258,21 +258,21 @@ void receive_target_data() {
   serial_buffer[length] = '\0';
 
   if (strcmp(serial_buffer, "START") == 0) { //Checks for start command
-    Serial.println("READY");
+    Serial.println(F("READY"));
     return;
   }
   else if (strncmp(serial_buffer, "CALIBRATE,", 10) == 0) { //Checks for calibrate command
     char* data = serial_buffer + 10;
     char* comma = strchr(data, ',');
     if (comma == nullptr) { //Checks if data es empty or invalid
-      Serial.println("ERROR - Calibration Data Formatting");
+      Serial.println(F("ERROR - Calibration Data Formatting"));
       return;
     }
     *comma = '\0'; //Updates polaris reference data
     polaris_ha = atof(data);
     polaris_dec = atof(comma + 1);
     calibration_data_received = true;
-    Serial.println("CONFIRM");
+    Serial.println(F("CONFIRM"));
     return;
   }
   else if (strncmp(serial_buffer, "GOTO,", 5) == 0) { //Checks for goto command
@@ -280,7 +280,7 @@ void receive_target_data() {
     char* comma = strchr(data, ',');
 
     if (comma == nullptr) {
-      Serial.println("ERROR - GOTO Data Formatting");
+      Serial.print(F("ERROR - GOTO Data Formatting"));
       return;
     }
     *comma = '\0'; //Updates target location data
@@ -288,26 +288,26 @@ void receive_target_data() {
     target_dec = atof(comma + 1);
     target_data_received = true;
     goto_target();
-    Serial.println("CONFIRM");
+    Serial.println(F("CONFIRM"));
     return;
   }
   else if (strcmp(serial_buffer, "STOP") == 0) { //Checks for stop command and stops motors
     motor1.stop();
     motor2.stop();
-    Serial.println("CONFIRM");
+    Serial.println(F("CONFIRM"));
     return;
   }
   else if (strcmp(serial_buffer, "STATUS") == 0) { //Checks for status command and sends status
-    Serial.println("CONFIRM");
-    Serial.print("LOCATION STATUS,");
+    Serial.println(F("CONFIRM"));
+    Serial.print(F("LOCATION STATUS,"));
     Serial.print(current_ha);
-    Serial.print(",");
+    Serial.print(F(","));
     Serial.println(current_dec);
-    Serial.print("SYSTEM STATUS,");
+    Serial.print(F("SYSTEM STATUS,"));
     Serial.print(current_telescope_status);
-    Serial.print(",");
+    Serial.print(F(","));
     Serial.print(current_display_status);
-    Serial.print("CALIBRATED,");
+    Serial.print(F("CALIBRATED,"));
     Serial.println(telescope_calibrated);
     return;
   }
@@ -321,7 +321,7 @@ void update_goto() {
       return;
   }
   if (motor1.distanceToGo() == 0 && motor2.distanceToGo() == 0) {
-      Serial.println("Arrived."); //Announce target arrival to serial
+      Serial.println("ARRIVED"); //Announce target arrival to serial
       current_telescope_status = Tracking_Object;
       current_ha = target_ha;
       current_dec = target_dec;
@@ -527,7 +527,7 @@ void setup() {
   //Booting sequence (serial port)
   Serial.begin(115200);
   delay(2000);
-  Serial.println("ASTEPS BOOTED");
+  Serial.println(F("ASTEPS BOOTED"));
 }
 
 
@@ -608,12 +608,12 @@ void loop() {
 
     case Polaris_sync:
         if (!calibration_requested) { //Requests calibration data from serial
-          Serial.println("REQUEST_CALIBRATION");
+          Serial.println(F("REQUEST_CALIBRATION"));
           calibration_requested = true;
     }
       if (double_press) {
           if (!calibration_data_received) {
-          Serial.println("ERROR - No Calibration Data");
+          Serial.println(F("ERROR - No Calibration Data"));
           return;
         }
         polaris_ha_steps = motor1.currentPosition(); //Saves motor positions in steps
