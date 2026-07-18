@@ -19,6 +19,7 @@ This main file imports functions from other files in /software (python)
 
 """Imports"""
 import datetime
+import time
 import config
 from config import logger
 import reuseable_functions
@@ -52,11 +53,11 @@ try:
             
             if telescope.wait_for_calibration_complete():
                 print("Calibration successful\n")
-
+        
         while True:
             current_time = astropy_positions.get_time()
             target_location: SkyCoord = astropy_positions.get_target_location(
-                observer_location, current_time)
+                observer_location, current_time) #Gets user target
             #Gets format to parse RA and DEC angles
             icrs_value_target = target_location.transform_to("icrs")
             logger.debug(f"Converted target data to icrs = {icrs_value_target}")

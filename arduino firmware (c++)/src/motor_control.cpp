@@ -100,13 +100,14 @@ unsigned long first_press_time = 0; //Joystick double press detection
 const unsigned long double_press_time = 500; //Double detection time frame ms
 bool double_press = false; //Double press event triggers
 bool second_press_waiting = false;
-//Screen refresh limiter
+//Screen refresh limiter and buffers
 unsigned long last_display_refresh = 0;
 const unsigned long display_refresh = 250; //Screen refresh rate (ms)
 bool display_needs_updating = true; //For only refreshing screen when needed
 unsigned long success_time = 0; //Timer for success screen
 const unsigned long success_delay = 3000; //ms
-
+#define SERIAL_BUFFER_SIZE 50 //To help minimize memory usage by reducing buffer size
+char serial_buffer[SERIAL_BUFFER_SIZE];
 
 //Non display functions
 //Motor power control functions
@@ -253,65 +254,50 @@ void receive_target_data() {
   if (!Serial.available()) {
     return;
   }
-  String target_data = Serial.readStringUntil('\n');
-  
-  target_data.trim();
-  Serial.println(target_data);
+  size_t length = Serial.readBytesUntil('\n', serial_buffer, SERIAL_BUFFER_SIZE - 1);
+  serial_buffer[length] = '\0';
 
-  int first_comma = target_data.indexOf(','); //Detecting gap between command, ha and dec coordinates
-  String command = "";
-  command.trim();
-  if (first_comma == -1) { //Extracts serial command
-    command = target_data;
-  }
-  else {
-    command = target_data.substring(0, first_comma);
-  }
-  Serial.print("Command detected: ");
-  Serial.println(command);
-
-  if (command == "START") { //Tells python a connection has been made
+  if (strcmp(serial_buffer, "START") == 0) { //Checks for start command
     Serial.println("READY");
     return;
   }
-  else if (command == "CALIBRATE") { //Sets calibration data for polaris variables
-    int second_comma = target_data.indexOf(',', first_comma + 1);
-    if (second_comma == -1) { //Checking for data error
-        Serial.println("ERROR - Calibration Data Formatting");
-        return;
+  else if (strncmp(serial_buffer, "CALIBRATE,", 10) == 0) { //Checks for calibrate command
+    char* data = serial_buffer + 10;
+    char* comma = strchr(data, ',');
+    if (comma == nullptr) { //Checks if data es empty or invalid
+      Serial.println("ERROR - Calibration Data Formatting");
+      return;
     }
-    polaris_ha = target_data.substring(first_comma + 1, second_comma).toFloat(); //Saves received polaris data
-    polaris_dec = target_data.substring(second_comma + 1).toFloat();
+    *comma = '\0'; //Updates polaris reference data
+    polaris_ha = atof(data);
+    polaris_dec = atof(comma + 1);
     calibration_data_received = true;
     Serial.println("CONFIRM");
     return;
+  }
+  else if (strncmp(serial_buffer, "GOTO,", 5) == 0) { //Checks for goto command
+    char* data = serial_buffer + 5;
+    char* comma = strchr(data, ',');
 
-}
-  else if (command == "GOTO") { //Tells motors to move to target
-    int second_comma = target_data.indexOf(',', first_comma + 1);
-    if (second_comma == -1) { //Checking for data error
+    if (comma == nullptr) {
       Serial.println("ERROR - GOTO Data Formatting");
       return;
     }
-    target_ha = target_data.substring(first_comma + 1, second_comma).toFloat();
-    target_dec = target_data.substring(second_comma + 1).toFloat();
+    *comma = '\0'; //Updates target location data
+    target_ha = atof(data);
+    target_dec = atof(comma + 1);
     target_data_received = true;
     goto_target();
     Serial.println("CONFIRM");
-    current_success_type = Data_import_success;
-    success_time = millis();
-    current_display_status = Success_screen;
-    display_needs_updating = true;
     return;
   }
-  else if (command == "STOP") { //Tells motors to stop (Emergency stop)
+  else if (strcmp(serial_buffer, "STOP") == 0) { //Checks for stop command and stops motors
     motor1.stop();
     motor2.stop();
-    current_telescope_status = Idle;
     Serial.println("CONFIRM");
     return;
   }
-  else if (command == "STATUS") { //Prints telescope current status to serial
+  else if (strcmp(serial_buffer, "STATUS") == 0) { //Checks for status command and sends status
     Serial.println("CONFIRM");
     Serial.print("LOCATION STATUS,");
     Serial.print(current_ha);
@@ -635,6 +621,7 @@ void loop() {
         current_ha = polaris_ha; //Updates telescope position
         current_dec = polaris_dec;
         telescope_calibrated = true;
+        Serial.println(F("CALIBRATION_COMPLETE")); //Sends confirmation method
         calibration_requested = false; //Resets calibration data checks for next alignment
         calibration_data_received = false;
         current_success_type = Polaris_success;
