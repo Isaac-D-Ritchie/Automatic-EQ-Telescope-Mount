@@ -106,7 +106,7 @@ const unsigned long display_refresh = 250; //Screen refresh rate (ms)
 bool display_needs_updating = true; //For only refreshing screen when needed
 unsigned long success_time = 0; //Timer for success screen
 const unsigned long success_delay = 3000; //ms
-#define SERIAL_BUFFER_SIZE 50 //To help minimize memory usage by reducing buffer size
+#define SERIAL_BUFFER_SIZE 50 //To help minimize heap fragmentation usage by adding a dedicated serial buffer
 char serial_buffer[SERIAL_BUFFER_SIZE];
 
 //Non display functions
