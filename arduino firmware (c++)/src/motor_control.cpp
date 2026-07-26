@@ -245,6 +245,10 @@ void goto_target() {
   enable_motor(en_pin_2);
   long target_ha_steps = polaris_ha_steps + ((target_ha - polaris_ha) * steps_per_degree_ha);
   long target_dec_steps = polaris_dec_steps + ((target_dec - polaris_dec) * steps_per_degree_dec);
+  Serial.print(F("HA Difference = ")); //Prints calculated angle differences to serial port
+  Serial.println(target_ha - polaris_ha, 6);
+  Serial.print(F("DEC Difference = "));
+  Serial.println(target_dec - polaris_dec, 6);
   motor1.moveTo(target_ha_steps);
   motor2.moveTo(target_dec_steps);
   current_telescope_status = Targeting_Go_To;
@@ -280,7 +284,7 @@ void receive_target_data() {
     char* comma = strchr(data, ',');
 
     if (comma == nullptr) {
-      Serial.print(F("ERROR - GOTO Data Formatting"));
+      Serial.println(F("ERROR - GOTO Data Formatting"));
       return;
     }
     *comma = '\0'; //Updates target location data

@@ -43,7 +43,7 @@ try:
 
         polaris = astropy_positions.get_polaris_position() #Gets Polaris coordinates
         current_time = astropy_positions.get_time()
-        polaris_ha, polaris_dec, polaris_ra = astropy_positions.get_mount_angles(
+        polaris_ha, polaris_ra, polaris_dec = astropy_positions.get_mount_angles(
             polaris, observer_location, current_time) # Convert Polaris coordinates to mount angles
         
         # Wait for Arduino request
@@ -69,7 +69,15 @@ try:
                   f"Declination = {declination:.2f}\n"
                   f"Right Ascension = {right_ascension:.2f}\n"
                   f"Altitude = {target_location.alt.deg:.2f}\n")
+            print(f"Sending HA : {hour_angle:.6f}")
+            print(f"Sending DEC: {declination:.6f}")
             telescope.goto(hour_angle, declination)
+            while True: #Prints arduino differencees
+                response = telescope.read()
+                if response:
+                    print(f"Arduino: {response}")
+                if response == "CONFIRM":
+                    break
             time.sleep(5)
 
 except KeyboardInterrupt:
